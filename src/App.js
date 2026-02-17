@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Copy, Plus, Sparkles } from 'lucide-react';
+import { Copy, Plus, Sparkles, QrCode } from 'lucide-react';
 import { supabase } from './supabaseClient';
+import QRCode from 'react-qr-code';
 
 const App = () => {
   const [currentView, setCurrentView] = useState('home');
@@ -9,6 +10,7 @@ const App = () => {
 
   const [participants, setParticipants] = useState([]);
   const [showJoinModal, setShowJoinModal] = useState(false);
+  const [showQRModal, setShowQRModal] = useState(false);
   const [joinFormData, setJoinFormData] = useState({
     displayName: '',
     username: '',
@@ -344,13 +346,22 @@ const App = () => {
               <h1 className="text-xl font-bold text-gray-800">{trainName || `Train ${trainId}`}</h1>
               <p className="text-gray-600 text-sm">{participants.length} participant{participants.length !== 1 ? 's' : ''}</p>
             </div>
-            <button
-              onClick={copyShareLink}
-              className="mt-2 sm:mt-0 flex items-center gap-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:opacity-90 transition-opacity"
-            >
-              <Copy size={16} />
-              {copied ? 'Copied!' : 'Copy Link'}
-            </button>
+            <div className="flex gap-2 mt-2 sm:mt-0">
+              <button
+                onClick={() => setShowQRModal(true)}
+                className="flex items-center gap-2 bg-gray-800 text-white px-4 py-2 rounded-lg text-sm font-medium hover:opacity-90 transition-opacity"
+              >
+                <QrCode size={16} />
+                QR Code
+              </button>
+              <button
+                onClick={copyShareLink}
+                className="flex items-center gap-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:opacity-90 transition-opacity"
+              >
+                <Copy size={16} />
+                {copied ? 'Copied!' : 'Copy Link'}
+              </button>
+            </div>
           </div>
         </div>
 
@@ -399,6 +410,58 @@ const App = () => {
             >
               <Plus className="h-8 w-8 text-gray-400 mb-2" />
               <p className="text-gray-500 font-medium">Join Train</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // Render QR code modal
+  const renderQRModal = () => {
+    if (!showQRModal) return null;
+    
+    const shareLink = `${window.location.origin}/?train=${trainId}`;
+    
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div className="bg-white rounded-2xl shadow-xl p-6 max-w-md w-full">
+          <div className="text-center">
+            <h2 className="text-2xl font-bold text-gray-800 mb-2">Share via QR Code</h2>
+            <p className="text-gray-600 mb-6">Scan this QR code to join the train</p>
+            
+            <div className="bg-gray-50 p-6 rounded-xl flex items-center justify-center mb-6">
+              <QRCode 
+                value={shareLink} 
+                size={200}
+                level="H"
+                includeMargin={true}
+                className="bg-white p-2 rounded-lg"
+              />
+            </div>
+            
+            <div className="text-sm text-gray-500 mb-6">
+              <p className="font-medium">Train ID: {trainId}</p>
+              <p className="truncate">{shareLink}</p>
+            </div>
+            
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  setShowQRModal(false);
+                  copyShareLink();
+                }}
+                className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white py-3 rounded-lg font-medium hover:opacity-90 transition-opacity"
+              >
+                <Copy size={16} />
+                Copy Link
+              </button>
+              <button
+                onClick={() => setShowQRModal(false)}
+                className="flex-1 bg-gray-200 text-gray-800 py-3 rounded-lg font-medium hover:bg-gray-300 transition-colors"
+              >
+                Close
+              </button>
             </div>
           </div>
         </div>
@@ -500,6 +563,7 @@ const App = () => {
       {currentView === 'create' && renderCreateView()}
       {currentView === 'train' && renderTrainView()}
       {renderJoinModal()}
+      {renderQRModal()}
     </div>
   );
 };

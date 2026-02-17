@@ -1,9 +1,16 @@
 import React, { useState, useEffect } from 'react';
+import { Moon, Sun } from 'lucide-react';
 import { Copy, Plus, Sparkles, QrCode } from 'lucide-react';
 import { supabase } from './supabaseClient';
 import QRCode from 'react-qr-code';
 
 const App = () => {
+  const [darkMode, setDarkMode] = useState(() => {
+    const savedTheme = localStorage.getItem('theme');
+    return savedTheme === 'dark' || 
+      (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  });
+  
   const [currentView, setCurrentView] = useState('home');
   const [trainId, setTrainId] = useState('');
   const [trainName, setTrainName] = useState('');
@@ -71,6 +78,17 @@ const App = () => {
     };
   }, [trainId]);
 
+  // Apply dark mode class to body and save preference
+  useEffect(() => {
+    if (darkMode) {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    }
+  }, [darkMode]);
+
   // Load participants when trainId changes
   useEffect(() => {
     if (!trainId) return;
@@ -128,6 +146,11 @@ const App = () => {
   const hasAtLeastOnePlatform = (formData) => {
     return formData.instagram || formData.tiktok || formData.twitter || 
            formData.linkedin || formData.youtube || formData.twitch;
+  };
+
+  // Toggle dark mode
+  const toggleDarkMode = () => {
+    setDarkMode(!darkMode);
   };
 
   // Create a new train
@@ -306,13 +329,21 @@ const App = () => {
 
   // Render home view
   const renderHomeView = () => (
-    <div className="min-h-screen bg-gradient-to-br from-purple-500 via-pink-500 to-red-500 flex flex-col items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full text-center">
-        <div className="flex justify-center mb-6">
+    <div className="min-h-screen bg-gradient-to-br from-purple-500 via-pink-500 to-red-500 flex flex-col items-center justify-center p-4 dark:from-gray-800 dark:to-gray-900">
+      <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full text-center relative">
+        <div className="flex justify-center mb-6 relative">
           <Sparkles className="h-12 w-12 text-purple-500" />
+          <button
+            onClick={toggleDarkMode}
+            className="absolute top-0 right-0 bg-gray-200 text-gray-800 px-3 py-1 rounded-lg text-sm font-medium hover:bg-gray-300 transition-colors dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600"
+            aria-label={darkMode ? "Switch to light mode" : "Switch to dark mode"}
+          >
+            {darkMode ? <Sun size={14} /> : <Moon size={14} />}
+            {darkMode ? " Light" : " Dark"}
+          </button>
         </div>
-        <h1 className="text-3xl font-bold text-gray-800 mb-2">FollowTrain</h1>
-        <p className="text-gray-600 mb-8">A lightweight app to share and follow each other on Instagram</p>
+        <h1 className="text-3xl font-bold text-gray-800 mb-2 dark:text-white">FollowTrain</h1>
+        <p className="text-gray-600 mb-8 dark:text-gray-300">A lightweight app to share and follow each other on Instagram</p>
         <button
           onClick={() => setCurrentView('create')}
           className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-lg font-medium hover:opacity-90 transition-opacity w-full"
@@ -325,12 +356,22 @@ const App = () => {
 
   // Render create train view
   const renderCreateView = () => (
-    <div className="min-h-screen bg-gradient-to-br from-purple-500 via-pink-500 to-red-500 flex flex-col items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-xl p-6 max-w-md w-full">
-        <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">Create a Train</h2>
+    <div className="min-h-screen bg-gradient-to-br from-purple-500 via-pink-500 to-red-500 flex flex-col items-center justify-center p-4 dark:from-gray-800 dark:to-gray-900">
+      <div className="bg-white rounded-2xl shadow-xl p-6 max-w-md w-full relative">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Create a Train</h2>
+          <button
+            onClick={toggleDarkMode}
+            className="bg-gray-200 text-gray-800 px-3 py-1 rounded-lg text-sm font-medium hover:bg-gray-300 transition-colors dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600"
+            aria-label={darkMode ? "Switch to light mode" : "Switch to dark mode"}
+          >
+            {darkMode ? <Sun size={14} /> : <Moon size={14} />}
+            {darkMode ? "" : ""}
+          </button>
+        </div>
         
         {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4 dark:bg-red-900 dark:border-red-700 dark:text-red-200">
             {error}
           </div>
         )}
@@ -504,15 +545,23 @@ const App = () => {
     if (!trainId) return null;
 
     return (
-      <div className="min-h-screen bg-gradient-to-b from-purple-500 to-pink-500">
+      <div className="min-h-screen bg-gradient-to-b from-purple-500 to-pink-500 dark:from-gray-800 dark:to-gray-900">
         {/* Header */}
-        <div className="bg-white shadow-md p-4">
+        <div className="bg-white shadow-md p-4 dark:bg-gray-800 dark:text-white">
           <div className="max-w-4xl mx-auto flex flex-col sm:flex-row justify-between items-center">
             <div>
-              <h1 className="text-xl font-bold text-gray-800">{trainName || `Train ${trainId}`}</h1>
-              <p className="text-gray-600 text-sm">{participants.length} participant{participants.length !== 1 ? 's' : ''}</p>
+              <h1 className="text-xl font-bold text-gray-800 dark:text-white">{trainName || `Train ${trainId}`}</h1>
+              <p className="text-gray-600 text-sm dark:text-gray-300">{participants.length} participant{participants.length !== 1 ? 's' : ''}</p>
             </div>
             <div className="flex gap-2 mt-2 sm:mt-0">
+              <button
+                onClick={toggleDarkMode}
+                className="flex items-center gap-2 bg-gray-200 text-gray-800 px-3 py-2 rounded-lg text-sm font-medium hover:bg-gray-300 transition-colors dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600"
+                aria-label={darkMode ? "Switch to light mode" : "Switch to dark mode"}
+              >
+                {darkMode ? <Sun size={16} /> : <Moon size={16} />}
+                {darkMode ? "Light" : "Dark"}
+              </button>
               <button
                 onClick={() => setShowQRModal(true)}
                 className="flex items-center gap-2 bg-gray-800 text-white px-4 py-2 rounded-lg text-sm font-medium hover:opacity-90 transition-opacity"
@@ -555,7 +604,7 @@ const App = () => {
                   }
                 }}
               >
-                <div className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow h-full">
+                <div className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow h-full dark:bg-gray-700">
                   <div className="p-4">
                     <div className="flex items-center mb-3">
                       <img
@@ -564,9 +613,9 @@ const App = () => {
                         className="w-12 h-12 rounded-full mr-3"
                       />
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-gray-800 truncate">{participant.display_name}</h3>
+                        <h3 className="font-semibold text-gray-800 truncate dark:text-white">{participant.display_name}</h3>
                         {participant.is_host && (
-                          <span className="inline-block bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded-full mt-1">
+                          <span className="inline-block bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded-full mt-1 dark:bg-purple-900 dark:text-purple-100">
                             Host
                           </span>
                         )}
@@ -576,44 +625,44 @@ const App = () => {
                     {/* Platform usernames */}
                     <div className="space-y-1 mb-3">
                       {participant.instagram_username && (
-                        <div className="flex items-center text-sm">
-                          <span className="font-medium text-gray-700 w-20">Instagram:</span>
-                          <span className="text-purple-600 truncate">@{participant.instagram_username}</span>
+                        <div className="flex items-center text-sm dark:text-gray-300">
+                          <span className="font-medium text-gray-700 w-20 dark:text-gray-400">Instagram:</span>
+                          <span className="text-purple-600 truncate dark:text-purple-400">@{participant.instagram_username}</span>
                         </div>
                       )}
                       {participant.tiktok_username && (
-                        <div className="flex items-center text-sm">
-                          <span className="font-medium text-gray-700 w-20">TikTok:</span>
-                          <span className="text-purple-600 truncate">@{participant.tiktok_username}</span>
+                        <div className="flex items-center text-sm dark:text-gray-300">
+                          <span className="font-medium text-gray-700 w-20 dark:text-gray-400">TikTok:</span>
+                          <span className="text-purple-600 truncate dark:text-purple-400">@{participant.tiktok_username}</span>
                         </div>
                       )}
                       {participant.twitter_username && (
-                        <div className="flex items-center text-sm">
-                          <span className="font-medium text-gray-700 w-20">Twitter:</span>
-                          <span className="text-purple-600 truncate">@{participant.twitter_username}</span>
+                        <div className="flex items-center text-sm dark:text-gray-300">
+                          <span className="font-medium text-gray-700 w-20 dark:text-gray-400">Twitter:</span>
+                          <span className="text-purple-600 truncate dark:text-purple-400">@{participant.twitter_username}</span>
                         </div>
                       )}
                       {participant.linkedin_username && (
-                        <div className="flex items-center text-sm">
-                          <span className="font-medium text-gray-700 w-20">LinkedIn:</span>
-                          <span className="text-purple-600 truncate">@{participant.linkedin_username}</span>
+                        <div className="flex items-center text-sm dark:text-gray-300">
+                          <span className="font-medium text-gray-700 w-20 dark:text-gray-400">LinkedIn:</span>
+                          <span className="text-purple-600 truncate dark:text-purple-400">@{participant.linkedin_username}</span>
                         </div>
                       )}
                       {participant.youtube_username && (
-                        <div className="flex items-center text-sm">
-                          <span className="font-medium text-gray-700 w-20">YouTube:</span>
-                          <span className="text-purple-600 truncate">@{participant.youtube_username}</span>
+                        <div className="flex items-center text-sm dark:text-gray-300">
+                          <span className="font-medium text-gray-700 w-20 dark:text-gray-400">YouTube:</span>
+                          <span className="text-purple-600 truncate dark:text-purple-400">@{participant.youtube_username}</span>
                         </div>
                       )}
                       {participant.twitch_username && (
-                        <div className="flex items-center text-sm">
-                          <span className="font-medium text-gray-700 w-20">Twitch:</span>
-                          <span className="text-purple-600 truncate">@{participant.twitch_username}</span>
+                        <div className="flex items-center text-sm dark:text-gray-300">
+                          <span className="font-medium text-gray-700 w-20 dark:text-gray-400">Twitch:</span>
+                          <span className="text-purple-600 truncate dark:text-purple-400">@{participant.twitch_username}</span>
                         </div>
                       )}
                     </div>
                     {participant.bio && (
-                      <p className="text-gray-600 text-sm">{participant.bio}</p>
+                      <p className="text-gray-600 text-sm dark:text-gray-300">{participant.bio}</p>
                     )}
                   </div>
                 </div>
@@ -643,12 +692,12 @@ const App = () => {
     
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-        <div className="bg-white rounded-2xl shadow-xl p-6 max-w-md w-full">
+        <div className="bg-white rounded-2xl shadow-xl p-6 max-w-md w-full dark:bg-gray-800 dark:text-white">
           <div className="text-center">
-            <h2 className="text-2xl font-bold text-gray-800 mb-2">Share via QR Code</h2>
-            <p className="text-gray-600 mb-6">Scan this QR code to join the train</p>
+            <h2 className="text-2xl font-bold text-gray-800 mb-2 dark:text-white">Share via QR Code</h2>
+            <p className="text-gray-600 mb-6 dark:text-gray-300">Scan this QR code to join the train</p>
             
-            <div className="bg-gray-50 p-6 rounded-xl flex items-center justify-center mb-6">
+            <div className="bg-gray-50 p-6 rounded-xl flex items-center justify-center mb-6 dark:bg-gray-700">
               <QRCode 
                 value={shareLink} 
                 size={200}
@@ -658,9 +707,9 @@ const App = () => {
               />
             </div>
             
-            <div className="text-sm text-gray-500 mb-6">
-              <p className="font-medium">Train ID: {trainId}</p>
-              <p className="truncate">{shareLink}</p>
+            <div className="text-sm text-gray-500 mb-6 dark:text-gray-400">
+              <p className="font-medium dark:text-gray-300">Train ID: {trainId}</p>
+              <p className="truncate dark:text-gray-400">{shareLink}</p>
             </div>
             
             <div className="flex gap-3">
@@ -669,14 +718,14 @@ const App = () => {
                   setShowQRModal(false);
                   copyShareLink();
                 }}
-                className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white py-3 rounded-lg font-medium hover:opacity-90 transition-opacity"
+                className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white py-3 rounded-lg font-medium hover:opacity-90 transition-opacity dark:hover:opacity-75"
               >
                 <Copy size={16} />
                 Copy Link
               </button>
               <button
                 onClick={() => setShowQRModal(false)}
-                className="flex-1 bg-gray-200 text-gray-800 py-3 rounded-lg font-medium hover:bg-gray-300 transition-colors"
+                className="flex-1 bg-gray-200 text-gray-800 py-3 rounded-lg font-medium hover:bg-gray-300 transition-colors dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600"
               >
                 Close
               </button>
@@ -693,11 +742,11 @@ const App = () => {
 
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-        <div className="bg-white rounded-2xl shadow-xl p-6 max-w-md w-full">
-          <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">Join Train</h2>
+        <div className="bg-white rounded-2xl shadow-xl p-6 max-w-md w-full dark:bg-gray-800 dark:text-white">
+          <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center dark:text-white">Join Train</h2>
           
           {error && (
-            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4 dark:bg-red-900 dark:border-red-700 dark:text-red-200">
               {error}
             </div>
           )}

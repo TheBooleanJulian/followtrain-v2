@@ -179,29 +179,35 @@ const App = () => {
       .single();
 
     if (trainError) {
-      setError('Failed to create train. Please try again.');
+      console.error('Train creation error:', trainError);
+      setError(`Failed to create train: ${trainError.message || 'Please try again.'}`);
       setLoading(false);
       return;
     }
 
     // Insert host participant
+    const participantData = {
+      train_id: newTrainId,
+      display_name: createFormData.displayName,
+      instagram_username: createFormData.instagram ? createFormData.instagram.replace(/^@/, '').toLowerCase() : null,
+      tiktok_username: createFormData.tiktok ? createFormData.tiktok.replace(/^@/, '').toLowerCase() : null,
+      twitter_username: createFormData.twitter ? createFormData.twitter.replace(/^@/, '').toLowerCase() : null,
+      linkedin_username: createFormData.linkedin ? createFormData.linkedin.replace(/^@/, '').toLowerCase() : null,
+      youtube_username: createFormData.youtube ? createFormData.youtube.replace(/^@/, '').toLowerCase() : null,
+      twitch_username: createFormData.twitch ? createFormData.twitch.replace(/^@/, '').toLowerCase() : null,
+      bio: createFormData.bio,
+      is_host: true
+    };
+
+    console.log('Inserting participant data:', participantData);
+
     const { error: participantError } = await supabase
       .from('participants')
-      .insert([{
-        train_id: newTrainId,
-        display_name: createFormData.displayName,
-        instagram_username: createFormData.instagram ? createFormData.instagram.replace(/^@/, '').toLowerCase() : null,
-        tiktok_username: createFormData.tiktok ? createFormData.tiktok.replace(/^@/, '').toLowerCase() : null,
-        twitter_username: createFormData.twitter ? createFormData.twitter.replace(/^@/, '').toLowerCase() : null,
-        linkedin_username: createFormData.linkedin ? createFormData.linkedin.replace(/^@/, '').toLowerCase() : null,
-        youtube_username: createFormData.youtube ? createFormData.youtube.replace(/^@/, '').toLowerCase() : null,
-        twitch_username: createFormData.twitch ? createFormData.twitch.replace(/^@/, '').toLowerCase() : null,
-        bio: createFormData.bio,
-        is_host: true
-      }]);
+      .insert([participantData]);
 
     if (participantError) {
-      setError('Failed to add participant. Please try again.');
+      console.error('Participant insertion error:', participantError);
+      setError(`Failed to add participant: ${participantError.message || 'Please try again.'}`);
       setLoading(false);
       return;
     }
@@ -258,23 +264,28 @@ const App = () => {
     }
 
     // Insert participant
+    const joinParticipantData = {
+      train_id: trainId,
+      display_name: joinFormData.displayName,
+      instagram_username: joinFormData.instagram ? joinFormData.instagram.replace(/^@/, '').toLowerCase() : null,
+      tiktok_username: joinFormData.tiktok ? joinFormData.tiktok.replace(/^@/, '').toLowerCase() : null,
+      twitter_username: joinFormData.twitter ? joinFormData.twitter.replace(/^@/, '').toLowerCase() : null,
+      linkedin_username: joinFormData.linkedin ? joinFormData.linkedin.replace(/^@/, '').toLowerCase() : null,
+      youtube_username: joinFormData.youtube ? joinFormData.youtube.replace(/^@/, '').toLowerCase() : null,
+      twitch_username: joinFormData.twitch ? joinFormData.twitch.replace(/^@/, '').toLowerCase() : null,
+      bio: joinFormData.bio,
+      is_host: false
+    };
+
+    console.log('Joining participant data:', joinParticipantData);
+
     const { error: participantError } = await supabase
       .from('participants')
-      .insert([{
-        train_id: trainId,
-        display_name: joinFormData.displayName,
-        instagram_username: joinFormData.instagram ? joinFormData.instagram.replace(/^@/, '').toLowerCase() : null,
-        tiktok_username: joinFormData.tiktok ? joinFormData.tiktok.replace(/^@/, '').toLowerCase() : null,
-        twitter_username: joinFormData.twitter ? joinFormData.twitter.replace(/^@/, '').toLowerCase() : null,
-        linkedin_username: joinFormData.linkedin ? joinFormData.linkedin.replace(/^@/, '').toLowerCase() : null,
-        youtube_username: joinFormData.youtube ? joinFormData.youtube.replace(/^@/, '').toLowerCase() : null,
-        twitch_username: joinFormData.twitch ? joinFormData.twitch.replace(/^@/, '').toLowerCase() : null,
-        bio: joinFormData.bio,
-        is_host: false
-      }]);
+      .insert([joinParticipantData]);
 
     if (participantError) {
-      setError('Failed to join train. Please try again.');
+      console.error('Join participant error:', participantError);
+      setError(`Failed to join train: ${participantError.message || 'Please try again.'}`);
       setLoading(false);
       return;
     }

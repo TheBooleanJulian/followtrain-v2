@@ -13,13 +13,23 @@ const App = () => {
   const [showQRModal, setShowQRModal] = useState(false);
   const [joinFormData, setJoinFormData] = useState({
     displayName: '',
-    username: '',
+    instagram: '',
+    tiktok: '',
+    twitter: '',
+    linkedin: '',
+    youtube: '',
+    twitch: '',
     bio: ''
   });
   const [createFormData, setCreateFormData] = useState({
     trainName: '',
     displayName: '',
-    username: '',
+    instagram: '',
+    tiktok: '',
+    twitter: '',
+    linkedin: '',
+    youtube: '',
+    twitch: '',
     bio: ''
   });
   const [loading, setLoading] = useState(false);
@@ -82,13 +92,42 @@ const App = () => {
     fetchParticipants();
   }, [trainId]);
 
-  // Validate Instagram username
-  const isValidUsername = (username) => {
+  // Validate usernames for different platforms
+  const isValidUsername = (username, platform) => {
+    if (!username.trim()) return true; // Empty is allowed
+    
     // Remove @ symbol if present
     const cleanUsername = username.replace(/^@/, '');
-    // Check if username is valid (alphanumeric, dots, underscores only, max 30 chars)
-    const regex = /^[a-zA-Z0-9._]{1,30}$/;
-    return regex.test(cleanUsername);
+    
+    // Platform-specific validation
+    switch (platform) {
+      case 'instagram':
+        // Instagram: alphanumeric, dots, underscores only, max 30 chars
+        return /^[a-zA-Z0-9._]{1,30}$/.test(cleanUsername);
+      case 'tiktok':
+        // TikTok: alphanumeric, dots, underscores, max 50 chars
+        return /^[a-zA-Z0-9._]{1,50}$/.test(cleanUsername);
+      case 'twitter':
+        // Twitter: alphanumeric, underscores, max 50 chars
+        return /^[a-zA-Z0-9_]{1,50}$/.test(cleanUsername);
+      case 'linkedin':
+        // LinkedIn: alphanumeric, dashes, dots, max 100 chars
+        return /^[a-zA-Z0-9.-]{1,100}$/.test(cleanUsername);
+      case 'youtube':
+        // YouTube: alphanumeric, max 100 chars
+        return /^[a-zA-Z0-9]{1,100}$/.test(cleanUsername);
+      case 'twitch':
+        // Twitch: alphanumeric, underscores, max 50 chars
+        return /^[a-zA-Z0-9_]{1,50}$/.test(cleanUsername);
+      default:
+        return true;
+    }
+  };
+
+  // Check if at least one platform is provided
+  const hasAtLeastOnePlatform = (formData) => {
+    return formData.instagram || formData.tiktok || formData.twitter || 
+           formData.linkedin || formData.youtube || formData.twitch;
   };
 
   // Create a new train
@@ -98,16 +137,26 @@ const App = () => {
     setError('');
 
     // Validate inputs
-    if (!createFormData.trainName.trim() || !createFormData.displayName.trim() || !createFormData.username.trim()) {
-      setError('All required fields must be filled.');
+    if (!createFormData.trainName.trim() || !createFormData.displayName.trim()) {
+      setError('Train name and display name are required.');
       setLoading(false);
       return;
     }
 
-    if (!isValidUsername(createFormData.username)) {
-      setError('Invalid Instagram username. Only letters, numbers, dots, and underscores allowed (max 30 characters).');
+    if (!hasAtLeastOnePlatform(createFormData)) {
+      setError('At least one social platform username is required.');
       setLoading(false);
       return;
+    }
+
+    // Validate each platform username
+    const platforms = ['instagram', 'tiktok', 'twitter', 'linkedin', 'youtube', 'twitch'];
+    for (const platform of platforms) {
+      if (createFormData[platform] && !isValidUsername(createFormData[platform], platform)) {
+        setError(`Invalid ${platform} username. Please check the format requirements.`);
+        setLoading(false);
+        return;
+      }
     }
 
     // Generate random 6-character ID
@@ -141,7 +190,12 @@ const App = () => {
       .insert([{
         train_id: newTrainId,
         display_name: createFormData.displayName,
-        username: createFormData.username.replace(/^@/, '').toLowerCase(),
+        instagram_username: createFormData.instagram ? createFormData.instagram.replace(/^@/, '').toLowerCase() : null,
+        tiktok_username: createFormData.tiktok ? createFormData.tiktok.replace(/^@/, '').toLowerCase() : null,
+        twitter_username: createFormData.twitter ? createFormData.twitter.replace(/^@/, '').toLowerCase() : null,
+        linkedin_username: createFormData.linkedin ? createFormData.linkedin.replace(/^@/, '').toLowerCase() : null,
+        youtube_username: createFormData.youtube ? createFormData.youtube.replace(/^@/, '').toLowerCase() : null,
+        twitch_username: createFormData.twitch ? createFormData.twitch.replace(/^@/, '').toLowerCase() : null,
         bio: createFormData.bio,
         is_host: true
       }]);
@@ -166,27 +220,41 @@ const App = () => {
     setError('');
 
     // Validate inputs
-    if (!joinFormData.displayName.trim() || !joinFormData.username.trim()) {
-      setError('Display name and username are required.');
+    if (!joinFormData.displayName.trim()) {
+      setError('Display name is required.');
       setLoading(false);
       return;
     }
 
-    if (!isValidUsername(joinFormData.username)) {
-      setError('Invalid Instagram username. Only letters, numbers, dots, and underscores allowed (max 30 characters).');
+    if (!hasAtLeastOnePlatform(joinFormData)) {
+      setError('At least one social platform username is required.');
       setLoading(false);
       return;
     }
 
-    // Check for duplicate username in the same train
-    const existingParticipant = participants.find(p => 
-      p.username === joinFormData.username.replace(/^@/, '').toLowerCase()
-    );
+    // Validate each platform username
+    const platforms = ['instagram', 'tiktok', 'twitter', 'linkedin', 'youtube', 'twitch'];
+    for (const platform of platforms) {
+      if (joinFormData[platform] && !isValidUsername(joinFormData[platform], platform)) {
+        setError(`Invalid ${platform} username. Please check the format requirements.`);
+        setLoading(false);
+        return;
+      }
+    }
 
-    if (existingParticipant) {
-      setError('This Instagram username is already in the train.');
-      setLoading(false);
-      return;
+    // Check for duplicate usernames in the same train
+    for (const platform of platforms) {
+      if (joinFormData[platform]) {
+        const existingParticipant = participants.find(p => 
+          p[`${platform}_username`] === joinFormData[platform].replace(/^@/, '').toLowerCase()
+        );
+
+        if (existingParticipant) {
+          setError(`This ${platform} username is already in the train.`);
+          setLoading(false);
+          return;
+        }
+      }
     }
 
     // Insert participant
@@ -195,7 +263,12 @@ const App = () => {
       .insert([{
         train_id: trainId,
         display_name: joinFormData.displayName,
-        username: joinFormData.username.replace(/^@/, '').toLowerCase(),
+        instagram_username: joinFormData.instagram ? joinFormData.instagram.replace(/^@/, '').toLowerCase() : null,
+        tiktok_username: joinFormData.tiktok ? joinFormData.tiktok.replace(/^@/, '').toLowerCase() : null,
+        twitter_username: joinFormData.twitter ? joinFormData.twitter.replace(/^@/, '').toLowerCase() : null,
+        linkedin_username: joinFormData.linkedin ? joinFormData.linkedin.replace(/^@/, '').toLowerCase() : null,
+        youtube_username: joinFormData.youtube ? joinFormData.youtube.replace(/^@/, '').toLowerCase() : null,
+        twitch_username: joinFormData.twitch ? joinFormData.twitch.replace(/^@/, '').toLowerCase() : null,
         bio: joinFormData.bio,
         is_host: false
       }]);
@@ -283,20 +356,102 @@ const App = () => {
             />
           </div>
           
-          <div className="mb-4">
-            <label className="block text-gray-700 text-sm font-medium mb-2" htmlFor="username">
-              Your Instagram Username *
+          <div className="mb-6">
+            <label className="block text-gray-700 text-sm font-medium mb-3">
+              Social Media Platforms (at least one required)
             </label>
-            <input
-              id="username"
-              type="text"
-              value={createFormData.username}
-              onChange={(e) => setCreateFormData({...createFormData, username: e.target.value})}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-              placeholder="@username"
-              required
-            />
-            <p className="text-xs text-gray-500 mt-1">We'll strip the @ symbol automatically</p>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-gray-700 text-sm font-medium mb-1" htmlFor="instagram">
+                  Instagram Username
+                </label>
+                <input
+                  id="instagram"
+                  type="text"
+                  value={createFormData.instagram}
+                  onChange={(e) => setCreateFormData({...createFormData, instagram: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  placeholder="@username"
+                />
+                <p className="text-xs text-gray-500 mt-1">Letters, numbers, dots, underscores (max 30 chars)</p>
+              </div>
+              
+              <div>
+                <label className="block text-gray-700 text-sm font-medium mb-1" htmlFor="tiktok">
+                  TikTok Username
+                </label>
+                <input
+                  id="tiktok"
+                  type="text"
+                  value={createFormData.tiktok}
+                  onChange={(e) => setCreateFormData({...createFormData, tiktok: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  placeholder="@username"
+                />
+                <p className="text-xs text-gray-500 mt-1">Letters, numbers, dots, underscores (max 50 chars)</p>
+              </div>
+              
+              <div>
+                <label className="block text-gray-700 text-sm font-medium mb-1" htmlFor="twitter">
+                  Twitter/X Username
+                </label>
+                <input
+                  id="twitter"
+                  type="text"
+                  value={createFormData.twitter}
+                  onChange={(e) => setCreateFormData({...createFormData, twitter: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  placeholder="@username"
+                />
+                <p className="text-xs text-gray-500 mt-1">Letters, numbers, underscores (max 50 chars)</p>
+              </div>
+              
+              <div>
+                <label className="block text-gray-700 text-sm font-medium mb-1" htmlFor="linkedin">
+                  LinkedIn Username
+                </label>
+                <input
+                  id="linkedin"
+                  type="text"
+                  value={createFormData.linkedin}
+                  onChange={(e) => setCreateFormData({...createFormData, linkedin: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  placeholder="username"
+                />
+                <p className="text-xs text-gray-500 mt-1">Letters, numbers, dashes, dots (max 100 chars)</p>
+              </div>
+              
+              <div>
+                <label className="block text-gray-700 text-sm font-medium mb-1" htmlFor="youtube">
+                  YouTube Channel Name
+                </label>
+                <input
+                  id="youtube"
+                  type="text"
+                  value={createFormData.youtube}
+                  onChange={(e) => setCreateFormData({...createFormData, youtube: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  placeholder="channelname"
+                />
+                <p className="text-xs text-gray-500 mt-1">Letters, numbers only (max 100 chars)</p>
+              </div>
+              
+              <div>
+                <label className="block text-gray-700 text-sm font-medium mb-1" htmlFor="twitch">
+                  Twitch Username
+                </label>
+                <input
+                  id="twitch"
+                  type="text"
+                  value={createFormData.twitch}
+                  onChange={(e) => setCreateFormData({...createFormData, twitch: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  placeholder="@username"
+                />
+                <p className="text-xs text-gray-500 mt-1">Letters, numbers, underscores (max 50 chars)</p>
+              </div>
+            </div>
           </div>
           
           <div className="mb-6">
@@ -369,12 +524,25 @@ const App = () => {
         <div className="p-4 max-w-4xl mx-auto">
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {participants.map((participant) => (
-              <a
+              <div
                 key={participant.id}
-                href={`https://instagram.com/${participant.username}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block"
+                className="block cursor-pointer"
+                onClick={() => {
+                  // Open the first available platform URL
+                  if (participant.instagram_username) {
+                    window.open(`https://instagram.com/${participant.instagram_username}`, '_blank');
+                  } else if (participant.tiktok_username) {
+                    window.open(`https://tiktok.com/@${participant.tiktok_username}`, '_blank');
+                  } else if (participant.twitter_username) {
+                    window.open(`https://twitter.com/${participant.twitter_username}`, '_blank');
+                  } else if (participant.linkedin_username) {
+                    window.open(`https://linkedin.com/in/${participant.linkedin_username}`, '_blank');
+                  } else if (participant.youtube_username) {
+                    window.open(`https://youtube.com/${participant.youtube_username}`, '_blank');
+                  } else if (participant.twitch_username) {
+                    window.open(`https://twitch.tv/${participant.twitch_username}`, '_blank');
+                  }
+                }}
               >
                 <div className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow h-full">
                   <div className="p-4">
@@ -386,7 +554,6 @@ const App = () => {
                       />
                       <div className="flex-1 min-w-0">
                         <h3 className="font-semibold text-gray-800 truncate">{participant.display_name}</h3>
-                        <p className="text-purple-600 text-sm truncate">@{participant.username}</p>
                         {participant.is_host && (
                           <span className="inline-block bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded-full mt-1">
                             Host
@@ -394,12 +561,52 @@ const App = () => {
                         )}
                       </div>
                     </div>
+                    
+                    {/* Platform usernames */}
+                    <div className="space-y-1 mb-3">
+                      {participant.instagram_username && (
+                        <div className="flex items-center text-sm">
+                          <span className="font-medium text-gray-700 w-20">Instagram:</span>
+                          <span className="text-purple-600 truncate">@{participant.instagram_username}</span>
+                        </div>
+                      )}
+                      {participant.tiktok_username && (
+                        <div className="flex items-center text-sm">
+                          <span className="font-medium text-gray-700 w-20">TikTok:</span>
+                          <span className="text-purple-600 truncate">@{participant.tiktok_username}</span>
+                        </div>
+                      )}
+                      {participant.twitter_username && (
+                        <div className="flex items-center text-sm">
+                          <span className="font-medium text-gray-700 w-20">Twitter:</span>
+                          <span className="text-purple-600 truncate">@{participant.twitter_username}</span>
+                        </div>
+                      )}
+                      {participant.linkedin_username && (
+                        <div className="flex items-center text-sm">
+                          <span className="font-medium text-gray-700 w-20">LinkedIn:</span>
+                          <span className="text-purple-600 truncate">@{participant.linkedin_username}</span>
+                        </div>
+                      )}
+                      {participant.youtube_username && (
+                        <div className="flex items-center text-sm">
+                          <span className="font-medium text-gray-700 w-20">YouTube:</span>
+                          <span className="text-purple-600 truncate">@{participant.youtube_username}</span>
+                        </div>
+                      )}
+                      {participant.twitch_username && (
+                        <div className="flex items-center text-sm">
+                          <span className="font-medium text-gray-700 w-20">Twitch:</span>
+                          <span className="text-purple-600 truncate">@{participant.twitch_username}</span>
+                        </div>
+                      )}
+                    </div>
                     {participant.bio && (
                       <p className="text-gray-600 text-sm">{participant.bio}</p>
                     )}
                   </div>
                 </div>
-              </a>
+              </div>
             ))}
             
             {/* Plus Card for joining */}
@@ -500,19 +707,96 @@ const App = () => {
               />
             </div>
             
-            <div className="mb-4">
-              <label className="block text-gray-700 text-sm font-medium mb-2" htmlFor="joinUsername">
-                Instagram Username *
+            <div className="mb-6">
+              <label className="block text-gray-700 text-sm font-medium mb-3">
+                Social Media Platforms (at least one required)
               </label>
-              <input
-                id="joinUsername"
-                type="text"
-                value={joinFormData.username}
-                onChange={(e) => setJoinFormData({...joinFormData, username: e.target.value})}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                placeholder="@username"
-                required
-              />
+              
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-gray-700 text-sm font-medium mb-1" htmlFor="joinInstagram">
+                    Instagram Username
+                  </label>
+                  <input
+                    id="joinInstagram"
+                    type="text"
+                    value={joinFormData.instagram}
+                    onChange={(e) => setJoinFormData({...joinFormData, instagram: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    placeholder="@username"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-gray-700 text-sm font-medium mb-1" htmlFor="joinTiktok">
+                    TikTok Username
+                  </label>
+                  <input
+                    id="joinTiktok"
+                    type="text"
+                    value={joinFormData.tiktok}
+                    onChange={(e) => setJoinFormData({...joinFormData, tiktok: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    placeholder="@username"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-gray-700 text-sm font-medium mb-1" htmlFor="joinTwitter">
+                    Twitter/X Username
+                  </label>
+                  <input
+                    id="joinTwitter"
+                    type="text"
+                    value={joinFormData.twitter}
+                    onChange={(e) => setJoinFormData({...joinFormData, twitter: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    placeholder="@username"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-gray-700 text-sm font-medium mb-1" htmlFor="joinLinkedin">
+                    LinkedIn Username
+                  </label>
+                  <input
+                    id="joinLinkedin"
+                    type="text"
+                    value={joinFormData.linkedin}
+                    onChange={(e) => setJoinFormData({...joinFormData, linkedin: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    placeholder="username"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-gray-700 text-sm font-medium mb-1" htmlFor="joinYoutube">
+                    YouTube Channel Name
+                  </label>
+                  <input
+                    id="joinYoutube"
+                    type="text"
+                    value={joinFormData.youtube}
+                    onChange={(e) => setJoinFormData({...joinFormData, youtube: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    placeholder="channelname"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-gray-700 text-sm font-medium mb-1" htmlFor="joinTwitch">
+                    Twitch Username
+                  </label>
+                  <input
+                    id="joinTwitch"
+                    type="text"
+                    value={joinFormData.twitch}
+                    onChange={(e) => setJoinFormData({...joinFormData, twitch: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    placeholder="@username"
+                  />
+                </div>
+              </div>
             </div>
             
             <div className="mb-6">

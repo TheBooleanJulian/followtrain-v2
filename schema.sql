@@ -12,7 +12,12 @@ CREATE TABLE participants (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   train_id VARCHAR(6) REFERENCES trains(id),
   display_name VARCHAR(100) NOT NULL,
-  username VARCHAR(30) NOT NULL,
+  instagram_username VARCHAR(30),
+  tiktok_username VARCHAR(50),
+  twitter_username VARCHAR(50),
+  linkedin_username VARCHAR(100),
+  youtube_username VARCHAR(100),
+  twitch_username VARCHAR(50),
   bio VARCHAR(100),
   is_host BOOLEAN DEFAULT FALSE,
   joined_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()

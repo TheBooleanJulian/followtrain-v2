@@ -5,14 +5,21 @@ import { supabase } from './supabaseClient';
 import QRCode from 'react-qr-code';
 
 const App = () => {
-  const [darkMode, setDarkMode] = useState(() => {
-    const savedTheme = localStorage.getItem('theme');
-    if (typeof window !== 'undefined' && window.matchMedia) {
-      return savedTheme === 'dark' || 
-        (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  const [darkMode, setDarkMode] = useState(false); // Default to false initially
+  
+  // Set the initial dark mode after component mounts
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const savedTheme = localStorage.getItem('theme');
+      if (window.matchMedia) {
+        const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const shouldUseDark = savedTheme === 'dark' || (!savedTheme && systemPrefersDark);
+        setDarkMode(shouldUseDark);
+      } else if (savedTheme) {
+        setDarkMode(savedTheme === 'dark');
+      }
     }
-    return savedTheme === 'dark'; // Default to false if no window object
-  });
+  }, []); // Run once after mount
   
   const [currentView, setCurrentView] = useState('home');
   const [trainId, setTrainId] = useState('');

@@ -7,8 +7,11 @@ import QRCode from 'react-qr-code';
 const App = () => {
   const [darkMode, setDarkMode] = useState(() => {
     const savedTheme = localStorage.getItem('theme');
-    return savedTheme === 'dark' || 
-      (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    if (typeof window !== 'undefined' && window.matchMedia) {
+      return savedTheme === 'dark' || 
+        (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    }
+    return savedTheme === 'dark'; // Default to false if no window object
   });
   
   const [currentView, setCurrentView] = useState('home');
@@ -80,12 +83,14 @@ const App = () => {
 
   // Apply dark mode class to body and save preference
   useEffect(() => {
-    if (darkMode) {
-      document.documentElement.classList.add('dark');
-      localStorage.setItem('theme', 'dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-      localStorage.setItem('theme', 'light');
+    if (typeof window !== 'undefined') {
+      if (darkMode) {
+        document.documentElement.classList.add('dark');
+        localStorage.setItem('theme', 'dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+        localStorage.setItem('theme', 'light');
+      }
     }
   }, [darkMode]);
 

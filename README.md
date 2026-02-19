@@ -118,6 +118,7 @@ See [ID_COLLISION_HANDLING.md](ID_COLLISION_HANDLING.md) for detailed documentat
 ### Multi-Platform Support
 - Instagram, TikTok, Twitter, LinkedIn, YouTube, Twitch
 - Platform-specific username validation
+- **LinkedIn profile URL requirement** for accurate profile linking
 - Dual-layer avatar system (primary platform + fallback)
 - Smart deep linking for mobile devices
 - **Intelligent autocomplete** with avatar previews for disambiguation
@@ -161,10 +162,11 @@ See [ID_COLLISION_HANDLING.md](ID_COLLISION_HANDLING.md) for detailed documentat
 - No follower counts or verified badges
 - No analytics
 - Username validation per platform requirements
+- **LinkedIn URL validation** with automatic parameter sanitization
 - Duplicate username check within same train
 - Train name max 50 chars
 - Bio max 100 chars
-- Train auto-expiry after 72 hours
+- Train auto-expiry after 72 hours (adjustable by host)
 
 ## License
 

@@ -300,8 +300,8 @@ const App = () => {
         // Twitter: alphanumeric, underscores, max 50 chars
         return /^[a-zA-Z0-9_]{1,50}$/.test(cleanUsername);
       case 'linkedin':
-        // LinkedIn: alphanumeric, dashes, dots, max 100 chars
-        return /^[a-zA-Z0-9.-]{1,100}$/.test(cleanUsername);
+        // LinkedIn URL validation
+        return isValidUrl(username, 'linkedin');
       case 'youtube':
         // YouTube: alphanumeric, max 100 chars
         return /^[a-zA-Z0-9]{1,100}$/.test(cleanUsername);
@@ -310,6 +310,42 @@ const App = () => {
         return /^[a-zA-Z0-9_]{1,50}$/.test(cleanUsername);
       default:
         return true;
+    }
+  };
+
+  // Validate URL format for LinkedIn and Facebook
+  const isValidUrl = (url, platform) => {
+    if (!url.trim()) return true; // Empty is allowed
+    
+    try {
+      const urlObj = new URL(url);
+      
+      // Platform-specific URL validation
+      switch (platform) {
+        case 'linkedin':
+          return urlObj.hostname === 'www.linkedin.com' || urlObj.hostname === 'linkedin.com';
+        case 'facebook':
+          return urlObj.hostname === 'www.facebook.com' || urlObj.hostname === 'facebook.com';
+        default:
+          return false;
+      }
+    } catch (e) {
+      return false; // Invalid URL format
+    }
+  };
+
+  // Sanitize URL by removing tracking parameters
+  const sanitizeUrl = (url) => {
+    if (!url.trim()) return url;
+    
+    try {
+      const urlObj = new URL(url);
+      // Remove common tracking parameters
+      urlObj.search = '';
+      urlObj.hash = '';
+      return urlObj.toString();
+    } catch (e) {
+      return url; // Return original if invalid URL
     }
   };
 
@@ -371,10 +407,22 @@ const App = () => {
     // Validate additional platforms
     const platforms = ['instagram', 'tiktok', 'twitter', 'linkedin', 'youtube', 'twitch'];
     for (const platform of platforms) {
-      if (createFormData[platform] && !isValidUsername(createFormData[platform], platform)) {
-        setError(`Invalid ${platform} username. Please check the format requirements.`);
-        setLoading(false);
-        return;
+      if (createFormData[platform]) {
+        if (platform === 'linkedin') {
+          // Special validation for LinkedIn URLs
+          if (!isValidUrl(createFormData[platform], 'linkedin')) {
+            setError('Please enter a valid LinkedIn profile URL (e.g., https://linkedin.com/in/your-profile)');
+            setLoading(false);
+            return;
+          }
+        } else {
+          // Regular username validation for other platforms
+          if (!isValidUsername(createFormData[platform], platform)) {
+            setError(`Invalid ${platform} username. Please check the format requirements.`);
+            setLoading(false);
+            return;
+          }
+        }
       }
     }
 
@@ -477,6 +525,9 @@ const App = () => {
       createFormData.displayName
     );
 
+    // Sanitize LinkedIn URL if provided
+    const sanitizedLinkedin = createFormData.linkedin ? sanitizeUrl(createFormData.linkedin) : null;
+    
     // Insert host participant
     const participantData = {
       train_id: newTrainId,
@@ -484,7 +535,7 @@ const App = () => {
       instagram_username: createFormData.instagram ? createFormData.instagram.replace(/^@/, '').toLowerCase() : null,
       tiktok_username: createFormData.tiktok ? createFormData.tiktok.replace(/^@/, '').toLowerCase() : null,
       twitter_username: createFormData.twitter ? createFormData.twitter.replace(/^@/, '').toLowerCase() : null,
-      linkedin_username: createFormData.linkedin ? createFormData.linkedin.replace(/^@/, '').toLowerCase() : null,
+      linkedin_username: sanitizedLinkedin,
       youtube_username: createFormData.youtube ? createFormData.youtube.replace(/^@/, '').toLowerCase() : null,
       twitch_username: createFormData.twitch ? createFormData.twitch.replace(/^@/, '').toLowerCase() : null,
       bio: createFormData.bio,
@@ -731,10 +782,22 @@ const App = () => {
     // Validate additional platforms
     const platforms = ['instagram', 'tiktok', 'twitter', 'linkedin', 'youtube', 'twitch'];
     for (const platform of platforms) {
-      if (joinFormData[platform] && !isValidUsername(joinFormData[platform], platform)) {
-        setError(`Invalid ${platform} username. Please check the format requirements.`);
-        setLoading(false);
-        return;
+      if (joinFormData[platform]) {
+        if (platform === 'linkedin') {
+          // Special validation for LinkedIn URLs
+          if (!isValidUrl(joinFormData[platform], 'linkedin')) {
+            setError('Please enter a valid LinkedIn profile URL (e.g., https://linkedin.com/in/your-profile)');
+            setLoading(false);
+            return;
+          }
+        } else {
+          // Regular username validation for other platforms
+          if (!isValidUsername(joinFormData[platform], platform)) {
+            setError(`Invalid ${platform} username. Please check the format requirements.`);
+            setLoading(false);
+            return;
+          }
+        }
       }
     }
     
@@ -784,13 +847,16 @@ const App = () => {
     );
 
     // Insert participant
+    // Sanitize LinkedIn URL if provided
+    const sanitizedLinkedin = joinFormData.linkedin ? sanitizeUrl(joinFormData.linkedin) : null;
+    
     const joinParticipantData = {
       train_id: trainId,
       display_name: joinFormData.displayName,
       instagram_username: joinFormData.instagram ? joinFormData.instagram.replace(/^@/, '').toLowerCase() : null,
       tiktok_username: joinFormData.tiktok ? joinFormData.tiktok.replace(/^@/, '').toLowerCase() : null,
       twitter_username: joinFormData.twitter ? joinFormData.twitter.replace(/^@/, '').toLowerCase() : null,
-      linkedin_username: joinFormData.linkedin ? joinFormData.linkedin.replace(/^@/, '').toLowerCase() : null,
+      linkedin_username: sanitizedLinkedin,
       youtube_username: joinFormData.youtube ? joinFormData.youtube.replace(/^@/, '').toLowerCase() : null,
       twitch_username: joinFormData.twitch ? joinFormData.twitch.replace(/^@/, '').toLowerCase() : null,
       bio: joinFormData.bio,
@@ -1310,7 +1376,7 @@ const App = () => {
               
               <div>
                 <label className="block text-gray-700 text-sm font-medium mb-1" htmlFor="linkedin">
-                  LinkedIn Username
+                  LinkedIn Profile URL
                 </label>
                 <input
                   id="linkedin"
@@ -1318,9 +1384,9 @@ const App = () => {
                   value={createFormData.linkedin}
                   onChange={(e) => setCreateFormData({...createFormData, linkedin: e.target.value})}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white dark:border-gray-600"
-                  placeholder="username"
+                  placeholder="https://linkedin.com/in/your-profile"
                 />
-                <p className="text-xs text-gray-500 mt-1">Letters, numbers, dashes, dots (max 100 chars)</p>
+                <p className="text-xs text-gray-500 mt-1">Please paste your full profile link to ensure users find the correct page.</p>
               </div>
               
               <div>
@@ -1614,12 +1680,12 @@ const App = () => {
                           <button
                             onClick={(e) => {
                               e.preventDefault();
-                              const smartLink = createSmartLink('linkedin', participant.linkedin_username);
-                              handleLinkClick(smartLink);
+                              // For LinkedIn URLs, use the stored URL directly
+                              handleLinkClick(participant.linkedin_username);
                             }}
                             className="text-purple-600 truncate hover:underline cursor-pointer bg-transparent border-none p-0 font-inherit text-left dark:text-purple-400"
                           >
-                            @{participant.linkedin_username}
+                            {participant.linkedin_username.replace('https://', '').replace('www.', '').split('/')[2] || 'Profile'}
                           </button>
                         </div>
                       )}
@@ -1931,7 +1997,7 @@ const App = () => {
                 
                 <div>
                   <label className="block text-gray-700 text-sm font-medium mb-1" htmlFor="joinLinkedin">
-                    LinkedIn Username
+                    LinkedIn Profile URL
                   </label>
                   <input
                     id="joinLinkedin"
@@ -1939,8 +2005,9 @@ const App = () => {
                     value={joinFormData.linkedin}
                     onChange={(e) => setJoinFormData({...joinFormData, linkedin: e.target.value})}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white dark:border-gray-600"
-                    placeholder="username"
+                    placeholder="https://linkedin.com/in/your-profile"
                   />
+                  <p className="text-xs text-gray-500 mt-1">Please paste your full profile link to ensure users find the correct page.</p>
                 </div>
                 
                 <div>

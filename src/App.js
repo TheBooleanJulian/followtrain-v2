@@ -151,6 +151,7 @@ const App = () => {
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState('');
+  const [guestTrainId, setGuestTrainId] = useState('');
 
   // Extract train ID or debug flag from URL on initial load
   useEffect(() => {
@@ -1736,6 +1737,9 @@ const App = () => {
 };
 
 export default App;
+
+
+
 
 
 

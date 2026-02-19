@@ -314,6 +314,49 @@ const App = () => {
     }
   };
 
+  // Comprehensive input sanitization to prevent prompt injection
+  const sanitizeInput = (input) => {
+    if (!input || typeof input !== 'string') return '';
+    
+    return input
+      // Remove or escape potentially dangerous characters
+      .replace(/[<>]/g, '') // Remove HTML tags
+      .replace(/&/g, '&amp;') // Escape ampersands
+      .replace(/"/g, '&quot;') // Escape double quotes
+      .replace(/'/g, '&#x27;') // Escape single quotes
+      .replace(/`/g, '&#x60;') // Escape backticks
+      .replace(/\$/g, '&#x24;') // Escape dollar signs
+      .replace(/\{/g, '&#x7B;') // Escape opening braces
+      .replace(/\}/g, '&#x7D;') // Escape closing braces
+      .replace(/\[/g, '&#x5B;') // Escape opening brackets
+      .replace(/\]/g, '&#x5D;') // Escape closing brackets
+      .replace(/\\/g, '&#x5C;') // Escape backslashes
+      .replace(/\n/g, ' ') // Replace newlines with spaces
+      .replace(/\r/g, ' ') // Replace carriage returns with spaces
+      .replace(/\t/g, ' ') // Replace tabs with spaces
+      .trim(); // Remove leading/trailing whitespace
+  };
+
+  // Sanitize all form data fields
+  const sanitizeFormData = (formData) => {
+    const sanitized = {};
+    
+    Object.keys(formData).forEach(key => {
+      if (typeof formData[key] === 'string') {
+        // Special handling for LinkedIn URLs - don't over-sanitize URLs
+        if (key === 'linkedin' && isValidUrl(formData[key], 'linkedin')) {
+          sanitized[key] = sanitizeUrl(formData[key]); // Use existing URL sanitizer
+        } else {
+          sanitized[key] = sanitizeInput(formData[key]);
+        }
+      } else {
+        sanitized[key] = formData[key]; // Keep non-string values as-is
+      }
+    });
+    
+    return sanitized;
+  };
+
   // Validate URL format for LinkedIn and Facebook
   const isValidUrl = (url, platform) => {
     if (!url.trim()) return true; // Empty is allowed
@@ -350,7 +393,6 @@ const App = () => {
     }
   };
 
-
   // Test database connection
   const testDatabaseConnection = async () => {
     try {
@@ -384,23 +426,26 @@ const App = () => {
     setLoading(true);
     setError('');
 
+    // Sanitize all form data first
+    const sanitizedFormData = sanitizeFormData(createFormData);
+
     // Validate inputs
-    if (!createFormData.trainName.trim() || !createFormData.displayName.trim()) {
+    if (!sanitizedFormData.trainName.trim() || !sanitizedFormData.displayName.trim()) {
       setError('Train name and display name are required.');
       setLoading(false);
       return;
     }
     
     // Validate primary platform and handle
-    if (!createFormData.primaryPlatform || !createFormData.primaryHandle) {
+    if (!sanitizedFormData.primaryPlatform || !sanitizedFormData.primaryHandle) {
       setError('Please select a primary platform and enter a handle for avatar generation.');
       setLoading(false);
       return;
     }
     
     // Validate primary handle format
-    if (!isValidUsername(createFormData.primaryHandle, createFormData.primaryPlatform)) {
-      setError(`Invalid ${createFormData.primaryPlatform} username. Please check the format requirements.`);
+    if (!isValidUsername(sanitizedFormData.primaryHandle, sanitizedFormData.primaryPlatform)) {
+      setError(`Invalid ${sanitizedFormData.primaryPlatform} username. Please check the format requirements.`);
       setLoading(false);
       return;
     }
@@ -408,17 +453,17 @@ const App = () => {
     // Validate additional platforms
     const platforms = ['instagram', 'tiktok', 'twitter', 'linkedin', 'youtube', 'twitch'];
     for (const platform of platforms) {
-      if (createFormData[platform]) {
+      if (sanitizedFormData[platform]) {
         if (platform === 'linkedin') {
           // Special validation for LinkedIn URLs
-          if (!isValidUrl(createFormData[platform], 'linkedin')) {
+          if (!isValidUrl(sanitizedFormData[platform], 'linkedin')) {
             setError('Please enter a valid LinkedIn profile URL (e.g., https://linkedin.com/in/your-profile)');
             setLoading(false);
             return;
           }
         } else {
           // Regular username validation for other platforms
-          if (!isValidUsername(createFormData[platform], platform)) {
+          if (!isValidUsername(sanitizedFormData[platform], platform)) {
             setError(`Invalid ${platform} username. Please check the format requirements.`);
             setLoading(false);
             return;
@@ -519,27 +564,27 @@ const App = () => {
       return;
     }
 
-    // Generate avatar URL for host
+    // Generate avatar URL for host using sanitized data
     const hostAvatarUrl = await generateAvatarUrl(
-      createFormData.primaryPlatform,
-      createFormData.primaryHandle,
-      createFormData.displayName
+      sanitizedFormData.primaryPlatform,
+      sanitizedFormData.primaryHandle,
+      sanitizedFormData.displayName
     );
 
     // Sanitize LinkedIn URL if provided
-    const sanitizedLinkedin = createFormData.linkedin ? sanitizeUrl(createFormData.linkedin) : null;
+    const sanitizedLinkedin = sanitizedFormData.linkedin ? sanitizeUrl(sanitizedFormData.linkedin) : null;
     
-    // Insert host participant
+    // Insert host participant with sanitized data
     const participantData = {
       train_id: newTrainId,
-      display_name: createFormData.displayName,
-      instagram_username: createFormData.instagram ? createFormData.instagram.replace(/^@/, '').toLowerCase() : null,
-      tiktok_username: createFormData.tiktok ? createFormData.tiktok.replace(/^@/, '').toLowerCase() : null,
-      twitter_username: createFormData.twitter ? createFormData.twitter.replace(/^@/, '').toLowerCase() : null,
+      display_name: sanitizedFormData.displayName,
+      instagram_username: sanitizedFormData.instagram ? sanitizedFormData.instagram.replace(/^@/, '').toLowerCase() : null,
+      tiktok_username: sanitizedFormData.tiktok ? sanitizedFormData.tiktok.replace(/^@/, '').toLowerCase() : null,
+      twitter_username: sanitizedFormData.twitter ? sanitizedFormData.twitter.replace(/^@/, '').toLowerCase() : null,
       linkedin_username: sanitizedLinkedin,
-      youtube_username: createFormData.youtube ? createFormData.youtube.replace(/^@/, '').toLowerCase() : null,
-      twitch_username: createFormData.twitch ? createFormData.twitch.replace(/^@/, '').toLowerCase() : null,
-      bio: createFormData.bio,
+      youtube_username: sanitizedFormData.youtube ? sanitizedFormData.youtube.replace(/^@/, '').toLowerCase() : null,
+      twitch_username: sanitizedFormData.twitch ? sanitizedFormData.twitch.replace(/^@/, '').toLowerCase() : null,
+      bio: sanitizedFormData.bio,
       is_host: true,
       admin_token: newAdminToken,
       avatar_url: hostAvatarUrl
@@ -759,23 +804,26 @@ const App = () => {
     setLoading(true);
     setError('');
 
+    // Sanitize all form data first
+    const sanitizedJoinData = sanitizeFormData(joinFormData);
+
     // Validate inputs
-    if (!joinFormData.displayName.trim()) {
+    if (!sanitizedJoinData.displayName.trim()) {
       setError('Display name is required.');
       setLoading(false);
       return;
     }
     
     // Validate primary platform and handle
-    if (!joinFormData.primaryPlatform || !joinFormData.primaryHandle) {
+    if (!sanitizedJoinData.primaryPlatform || !sanitizedJoinData.primaryHandle) {
       setError('Please select a primary platform and enter a handle for avatar generation.');
       setLoading(false);
       return;
     }
     
     // Validate primary handle format
-    if (!isValidUsername(joinFormData.primaryHandle, joinFormData.primaryPlatform)) {
-      setError(`Invalid ${joinFormData.primaryPlatform} username. Please check the format requirements.`);
+    if (!isValidUsername(sanitizedJoinData.primaryHandle, sanitizedJoinData.primaryPlatform)) {
+      setError(`Invalid ${sanitizedJoinData.primaryPlatform} username. Please check the format requirements.`);
       setLoading(false);
       return;
     }
@@ -783,17 +831,17 @@ const App = () => {
     // Validate additional platforms
     const platforms = ['instagram', 'tiktok', 'twitter', 'linkedin', 'youtube', 'twitch'];
     for (const platform of platforms) {
-      if (joinFormData[platform]) {
+      if (sanitizedJoinData[platform]) {
         if (platform === 'linkedin') {
           // Special validation for LinkedIn URLs
-          if (!isValidUrl(joinFormData[platform], 'linkedin')) {
+          if (!isValidUrl(sanitizedJoinData[platform], 'linkedin')) {
             setError('Please enter a valid LinkedIn profile URL (e.g., https://linkedin.com/in/your-profile)');
             setLoading(false);
             return;
           }
         } else {
           // Regular username validation for other platforms
-          if (!isValidUsername(joinFormData[platform], platform)) {
+          if (!isValidUsername(sanitizedJoinData[platform], platform)) {
             setError(`Invalid ${platform} username. Please check the format requirements.`);
             setLoading(false);
             return;
@@ -827,9 +875,9 @@ const App = () => {
     
     // Check for duplicate usernames in the same train
     for (const platform of platforms) {
-      if (joinFormData[platform]) {
+      if (sanitizedJoinData[platform]) {
         const existingParticipant = participants.find(p => 
-          p[`${platform}_username`] === joinFormData[platform].replace(/^@/, '').toLowerCase()
+          p[`${platform}_username`] === sanitizedJoinData[platform].replace(/^@/, '').toLowerCase()
         );
 
         if (existingParticipant) {
@@ -840,27 +888,27 @@ const App = () => {
       }
     }
     
-    // Generate avatar URL
+    // Generate avatar URL using sanitized data
     const avatarUrl = await generateAvatarUrl(
-      joinFormData.primaryPlatform,
-      joinFormData.primaryHandle,
-      joinFormData.displayName
+      sanitizedJoinData.primaryPlatform,
+      sanitizedJoinData.primaryHandle,
+      sanitizedJoinData.displayName
     );
 
-    // Insert participant
+    // Insert participant with sanitized data
     // Sanitize LinkedIn URL if provided
-    const sanitizedLinkedin = joinFormData.linkedin ? sanitizeUrl(joinFormData.linkedin) : null;
+    const sanitizedLinkedin = sanitizedJoinData.linkedin ? sanitizeUrl(sanitizedJoinData.linkedin) : null;
     
     const joinParticipantData = {
       train_id: trainId,
-      display_name: joinFormData.displayName,
-      instagram_username: joinFormData.instagram ? joinFormData.instagram.replace(/^@/, '').toLowerCase() : null,
-      tiktok_username: joinFormData.tiktok ? joinFormData.tiktok.replace(/^@/, '').toLowerCase() : null,
-      twitter_username: joinFormData.twitter ? joinFormData.twitter.replace(/^@/, '').toLowerCase() : null,
+      display_name: sanitizedJoinData.displayName,
+      instagram_username: sanitizedJoinData.instagram ? sanitizedJoinData.instagram.replace(/^@/, '').toLowerCase() : null,
+      tiktok_username: sanitizedJoinData.tiktok ? sanitizedJoinData.tiktok.replace(/^@/, '').toLowerCase() : null,
+      twitter_username: sanitizedJoinData.twitter ? sanitizedJoinData.twitter.replace(/^@/, '').toLowerCase() : null,
       linkedin_username: sanitizedLinkedin,
-      youtube_username: joinFormData.youtube ? joinFormData.youtube.replace(/^@/, '').toLowerCase() : null,
-      twitch_username: joinFormData.twitch ? joinFormData.twitch.replace(/^@/, '').toLowerCase() : null,
-      bio: joinFormData.bio,
+      youtube_username: sanitizedJoinData.youtube ? sanitizedJoinData.youtube.replace(/^@/, '').toLowerCase() : null,
+      twitch_username: sanitizedJoinData.twitch ? sanitizedJoinData.twitch.replace(/^@/, '').toLowerCase() : null,
+      bio: sanitizedJoinData.bio,
       is_host: false,
       avatar_url: avatarUrl
     };

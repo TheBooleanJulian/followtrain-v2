@@ -11,6 +11,7 @@
 - **Export System Refactor**: Unified export interface with toggleable panel
 - **Dark Mode Improvements**: Enhanced UI contrast and visibility
 - **Smart Autocomplete**: Visual username suggestions with avatar previews for disambiguation
+- **Security Enhancement**: Comprehensive input sanitization to prevent prompt injection attacks
 
 ### Changed
 - **Database Structure**: Extended participants table with multiple platform username fields

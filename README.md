@@ -147,7 +147,8 @@ See [ID_COLLISION_HANDLING.md](ID_COLLISION_HANDLING.md) for detailed documentat
 
 ### Security & Performance
 - Row Level Security (RLS) enabled on all tables
-- Input validation and sanitization
+- **Comprehensive input sanitization and validation to prevent prompt injection attacks**
+- Input validation and sanitization for all user inputs
 - Rate limiting for join requests
 - Cached avatar URLs for better performance
 - Automatic train expiry (72 hours)

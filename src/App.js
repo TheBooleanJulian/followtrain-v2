@@ -138,6 +138,26 @@ const App = () => {
     }
   }, []); // Run once after mount
   
+  // Restore admin token from localStorage when trainId changes
+  useEffect(() => {
+    if (trainId) {
+      const savedToken = localStorage.getItem(`followtrain_admin_${trainId}`);
+      if (savedToken) {
+        setAdminToken(savedToken);
+        setIsAdmin(true);
+        console.log('Restored admin token from localStorage for train:', trainId);
+      }
+    }
+  }, [trainId, setAdminToken, setIsAdmin]);
+  
+  // Save admin token to localStorage when it changes
+  useEffect(() => {
+    if (adminToken && trainId) {
+      localStorage.setItem(`followtrain_admin_${trainId}`, adminToken);
+      console.log('Saved admin token to localStorage for train:', trainId);
+    }
+  }, [adminToken, trainId]);
+  
   // Debug: Log every second to verify JavaScript is running
   useEffect(() => {
     console.log('App is running, time:', new Date().toISOString());
@@ -187,9 +207,82 @@ const App = () => {
     bio: ''
   });
   
-  // Rate limiting state
+  // Validate admin token against database
+  const validateAdminToken = async () => {
+    if (!adminToken || !trainId) return false;
+    
+    try {
+      const { data, error } = await supabase
+        .from('participants')
+        .select('admin_token, is_host')
+        .eq('train_id', trainId)
+        .eq('admin_token', adminToken)
+        .single();
+      
+      if (error || !data) {
+        // Invalid token - clear local storage
+        console.log('Invalid admin token, clearing localStorage');
+        localStorage.removeItem(`followtrain_admin_${trainId}`);
+        setAdminToken('');
+        setIsAdmin(false);
+        return false;
+      }
+      
+      // Valid token - ensure admin status is set
+      if (data.is_host === true) {
+        setIsAdmin(true);
+        return true;
+      }
+      
+      return false;
+    } catch (err) {
+      console.error('Token validation error:', err);
+      return false;
+    }
+  };
+  
+  // Validate token when adminToken or trainId changes
+  useEffect(() => {
+    if (adminToken && trainId) {
+      validateAdminToken();
+    }
+  }, [adminToken, trainId]); // eslint-disable-line react-hooks/exhaustive-deps
+  
+  // Function to help hosts reclaim admin access
+  const reclaimAdminAccess = async (displayName) => {
+    if (!trainId || !displayName) return false;
+    
+    try {
+      const { data, error } = await supabase
+        .from('participants')
+        .select('id, is_host, admin_token')
+        .eq('train_id', trainId)
+        .eq('display_name', displayName)
+        .eq('is_host', true)
+        .single();
+      
+      if (error || !data) {
+        console.log('No host found with that display name');
+        return false;
+      }
+      
+      if (data.admin_token) {
+        setAdminToken(data.admin_token);
+        setIsAdmin(true);
+        localStorage.setItem(`followtrain_admin_${trainId}`, data.admin_token);
+        console.log('Successfully reclaimed admin access');
+        return true;
+      }
+      
+      return false;
+    } catch (err) {
+      console.error('Error reclaiming admin access:', err);
+      return false;
+    }
+  };
   const [lastJoinRequest, setLastJoinRequest] = useState(0);
   const [rateLimitEnabled, setRateLimitEnabled] = useState(true); // Toggle for debugging
+  const [reclaimDisplayName, setReclaimDisplayName] = useState(''); // For admin access recovery
   const [joinFormData, setJoinFormData] = useState({
     displayName: '',
     instagram: '',
@@ -2220,6 +2313,35 @@ const App = () => {
                 </div>
                 <p className="text-sm text-gray-600 mt-2 dark:text-gray-300">
                   Status: {trainLocked ? '🔒 Locked (no new joins)' : '🔓 Unlocked (open for joins)'}
+                </p>
+              </div>
+              
+              <div className="bg-white p-4 rounded-lg shadow dark:bg-gray-700">
+                <h4 className="font-medium text-gray-800 mb-2 dark:text-white">Reclaim Admin Access</h4>
+                <div className="flex gap-2 mb-2">
+                  <input
+                    type="text"
+                    value={reclaimDisplayName}
+                    onChange={(e) => setReclaimDisplayName(e.target.value)}
+                    placeholder="Enter your display name"
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white dark:border-gray-600"
+                  />
+                  <button
+                    onClick={async () => {
+                      const success = await reclaimAdminAccess(reclaimDisplayName);
+                      if (success) {
+                        alert('Admin access successfully restored!');
+                      } else {
+                        alert('Could not restore admin access. Please check your display name.');
+                      }
+                    }}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
+                  >
+                    Restore
+                  </button>
+                </div>
+                <p className="text-sm text-gray-600 dark:text-gray-300">
+                  Lost admin access? Enter your display name to reclaim it.
                 </p>
               </div>
               

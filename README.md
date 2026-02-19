@@ -120,13 +120,18 @@ The application uses two tables:
 ### `participants`
 - `id`: UUID - Primary Key
 - `train_id`: String (foreign key to trains.id)
-- `display_name`: String (required)
+- `display_name`: String (required, max 100 chars)
 - `instagram_username`: String (optional, max 30 chars)
 - `tiktok_username`: String (optional, max 50 chars)
 - `twitter_username`: String (optional, max 50 chars)
-- `linkedin_username`: String (optional, max 100 chars)
+- `linkedin_username`: String (optional, max 100 chars) - LinkedIn profile URL
 - `youtube_username`: String (optional, max 100 chars)
 - `twitch_username`: String (optional, max 50 chars)
+- `facebook_username`: String (optional, max 50 chars) - Facebook profile URL
+- `whatsapp_number`: String (optional, max 15 chars) - Phone number with country code
+- `telegram_username`: String (optional, max 32 chars)
+- `discord_id`: String (optional, max 20 chars) - Discord username#tag or user ID
+- `github_username`: String (optional, max 39 chars)
 - `bio`: String (optional, max 100 chars)
 - `is_host`: Boolean
 - `admin_token`: String (24-char token for host admin access)

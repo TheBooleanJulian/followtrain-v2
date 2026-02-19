@@ -10,6 +10,7 @@ A lightweight app that lets groups of people share and follow each other across 
 - View all participants as profile cards with avatars
 - Click any social media handle to open profiles directly
 - **Enhanced export system** - Single export button with customizable platform selection
+- **Smart username autocomplete** - Visual suggestions with avatar previews for duplicate names
 - Copy shareable link or QR code with one click
 - **Admin controls** - Lock trains, kick participants, manage settings
 - No login or account required
@@ -119,6 +120,7 @@ See [ID_COLLISION_HANDLING.md](ID_COLLISION_HANDLING.md) for detailed documentat
 - Platform-specific username validation
 - Dual-layer avatar system (primary platform + fallback)
 - Smart deep linking for mobile devices
+- **Intelligent autocomplete** with avatar previews for disambiguation
 
 ### Export System
 - **Unified export interface**: Single button reveals comprehensive export panel
@@ -126,6 +128,13 @@ See [ID_COLLISION_HANDLING.md](ID_COLLISION_HANDLING.md) for detailed documentat
 - **Bulk operations**: Select All/Clear All functionality
 - **Multiple export formats**: Copy to clipboard or download as TXT file
 - **Clean UI**: Toggleable panel with proper spacing and organization
+
+### Smart Autocomplete
+- **Visual disambiguation**: Avatar previews help distinguish between users with same names
+- **Real-time suggestions**: Shows relevant accounts as you type
+- **Platform-specific**: Tailored for each social media platform
+- **Intelligent matching**: Prioritizes exact matches and popular accounts
+- **Seamless integration**: Works across all social media input fields
 
 ### Admin Features
 - Host receives admin token for train management

@@ -10,6 +10,7 @@
 - **Performance Improvements**: Avatar URL caching and rate limiting
 - **Export System Refactor**: Unified export interface with toggleable panel
 - **Dark Mode Improvements**: Enhanced UI contrast and visibility
+- **Smart Autocomplete**: Visual username suggestions with avatar previews for disambiguation
 
 ### Changed
 - **Database Structure**: Extended participants table with multiple platform username fields
@@ -17,9 +18,11 @@
 - **Export UI**: Replaced color-changing buttons with proper checkboxes
 - **Documentation**: Updated README with comprehensive feature documentation
 - **UI/UX**: Improved button styling and visual hierarchy
+- **Social Media Inputs**: Enhanced with intelligent autocomplete functionality
 
 ### Fixed
 - **Train Creation Reliability**: Eliminated potential failure points from ID collisions
 - **Input Validation**: Platform-specific username validation rules
 - **Dark Mode Visibility**: QR code button color contrast issues
 - **Build Issues**: ESLint warnings and cross-platform compatibility
+- **User Experience**: Added visual aids for username disambiguation

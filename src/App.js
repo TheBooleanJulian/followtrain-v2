@@ -498,7 +498,7 @@ const App = () => {
               type="text"
               value={createFormData.displayName}
               onChange={(e) => setCreateFormData({...createFormData, displayName: e.target.value})}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white dark:border-gray-600"
               placeholder="John Doe"
               required
             />
@@ -519,7 +519,7 @@ const App = () => {
                   type="text"
                   value={createFormData.instagram}
                   onChange={(e) => setCreateFormData({...createFormData, instagram: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white dark:border-gray-600"
                   placeholder="@username"
                 />
                 <p className="text-xs text-gray-500 mt-1">Letters, numbers, dots, underscores (max 30 chars)</p>
@@ -534,7 +534,7 @@ const App = () => {
                   type="text"
                   value={createFormData.tiktok}
                   onChange={(e) => setCreateFormData({...createFormData, tiktok: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white dark:border-gray-600"
                   placeholder="@username"
                 />
                 <p className="text-xs text-gray-500 mt-1">Letters, numbers, dots, underscores (max 50 chars)</p>
@@ -549,7 +549,7 @@ const App = () => {
                   type="text"
                   value={createFormData.twitter}
                   onChange={(e) => setCreateFormData({...createFormData, twitter: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white dark:border-gray-600"
                   placeholder="@username"
                 />
                 <p className="text-xs text-gray-500 mt-1">Letters, numbers, underscores (max 50 chars)</p>
@@ -564,7 +564,7 @@ const App = () => {
                   type="text"
                   value={createFormData.linkedin}
                   onChange={(e) => setCreateFormData({...createFormData, linkedin: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white dark:border-gray-600"
                   placeholder="username"
                 />
                 <p className="text-xs text-gray-500 mt-1">Letters, numbers, dashes, dots (max 100 chars)</p>
@@ -579,7 +579,7 @@ const App = () => {
                   type="text"
                   value={createFormData.youtube}
                   onChange={(e) => setCreateFormData({...createFormData, youtube: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white dark:border-gray-600"
                   placeholder="channelname"
                 />
                 <p className="text-xs text-gray-500 mt-1">Letters, numbers only (max 100 chars)</p>
@@ -594,7 +594,7 @@ const App = () => {
                   type="text"
                   value={createFormData.twitch}
                   onChange={(e) => setCreateFormData({...createFormData, twitch: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white dark:border-gray-600"
                   placeholder="@username"
                 />
                 <p className="text-xs text-gray-500 mt-1">Letters, numbers, underscores (max 50 chars)</p>
@@ -612,7 +612,7 @@ const App = () => {
               onChange={(e) => setCreateFormData({...createFormData, bio: e.target.value})}
               maxLength="100"
               rows="3"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white dark:border-gray-600"
               placeholder="Tell us about yourself..."
             />
           </div>
@@ -682,23 +682,7 @@ const App = () => {
             {participants.map((participant) => (
               <div
                 key={participant.id}
-                className="block cursor-pointer"
-                onClick={() => {
-                  // Open the first available platform URL
-                  if (participant.instagram_username) {
-                    window.open(`https://instagram.com/${participant.instagram_username}`, '_blank');
-                  } else if (participant.tiktok_username) {
-                    window.open(`https://tiktok.com/@${participant.tiktok_username}`, '_blank');
-                  } else if (participant.twitter_username) {
-                    window.open(`https://twitter.com/${participant.twitter_username}`, '_blank');
-                  } else if (participant.linkedin_username) {
-                    window.open(`https://linkedin.com/in/${participant.linkedin_username}`, '_blank');
-                  } else if (participant.youtube_username) {
-                    window.open(`https://youtube.com/${participant.youtube_username}`, '_blank');
-                  } else if (participant.twitch_username) {
-                    window.open(`https://twitch.tv/${participant.twitch_username}`, '_blank');
-                  }
-                }}
+                className="block"
               >
                 <div className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow h-full dark:bg-gray-700">
                   <div className="p-4">
@@ -723,37 +707,79 @@ const App = () => {
                       {participant.instagram_username && (
                         <div className="flex items-center text-sm dark:text-gray-300">
                           <span className="font-medium text-gray-700 w-20 dark:text-gray-400">Instagram:</span>
-                          <span className="text-purple-600 truncate dark:text-purple-400">@{participant.instagram_username}</span>
+                          <a 
+                            href={`https://instagram.com/${participant.instagram_username}`} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="text-purple-600 truncate hover:underline cursor-pointer"
+                          >
+                            @{participant.instagram_username}
+                          </a>
                         </div>
                       )}
                       {participant.tiktok_username && (
                         <div className="flex items-center text-sm dark:text-gray-300">
                           <span className="font-medium text-gray-700 w-20 dark:text-gray-400">TikTok:</span>
-                          <span className="text-purple-600 truncate dark:text-purple-400">@{participant.tiktok_username}</span>
+                          <a 
+                            href={`https://tiktok.com/@${participant.tiktok_username}`} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="text-purple-600 truncate hover:underline cursor-pointer dark:text-purple-400"
+                          >
+                            @{participant.tiktok_username}
+                          </a>
                         </div>
                       )}
                       {participant.twitter_username && (
                         <div className="flex items-center text-sm dark:text-gray-300">
                           <span className="font-medium text-gray-700 w-20 dark:text-gray-400">Twitter:</span>
-                          <span className="text-purple-600 truncate dark:text-purple-400">@{participant.twitter_username}</span>
+                          <a 
+                            href={`https://twitter.com/${participant.twitter_username}`} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="text-purple-600 truncate hover:underline cursor-pointer dark:text-purple-400"
+                          >
+                            @{participant.twitter_username}
+                          </a>
                         </div>
                       )}
                       {participant.linkedin_username && (
                         <div className="flex items-center text-sm dark:text-gray-300">
                           <span className="font-medium text-gray-700 w-20 dark:text-gray-400">LinkedIn:</span>
-                          <span className="text-purple-600 truncate dark:text-purple-400">@{participant.linkedin_username}</span>
+                          <a 
+                            href={`https://linkedin.com/in/${participant.linkedin_username}`} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="text-purple-600 truncate hover:underline cursor-pointer dark:text-purple-400"
+                          >
+                            @{participant.linkedin_username}
+                          </a>
                         </div>
                       )}
                       {participant.youtube_username && (
                         <div className="flex items-center text-sm dark:text-gray-300">
                           <span className="font-medium text-gray-700 w-20 dark:text-gray-400">YouTube:</span>
-                          <span className="text-purple-600 truncate dark:text-purple-400">@{participant.youtube_username}</span>
+                          <a 
+                            href={`https://youtube.com/${participant.youtube_username}`} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="text-purple-600 truncate hover:underline cursor-pointer dark:text-purple-400"
+                          >
+                            @{participant.youtube_username}
+                          </a>
                         </div>
                       )}
                       {participant.twitch_username && (
                         <div className="flex items-center text-sm dark:text-gray-300">
                           <span className="font-medium text-gray-700 w-20 dark:text-gray-400">Twitch:</span>
-                          <span className="text-purple-600 truncate dark:text-purple-400">@{participant.twitch_username}</span>
+                          <a 
+                            href={`https://twitch.tv/${participant.twitch_username}`} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="text-purple-600 truncate hover:underline cursor-pointer dark:text-purple-400"
+                          >
+                            @{participant.twitch_username}
+                          </a>
                         </div>
                       )}
                     </div>
@@ -857,7 +883,7 @@ const App = () => {
                 type="text"
                 value={joinFormData.displayName}
                 onChange={(e) => setJoinFormData({...joinFormData, displayName: e.target.value})}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white dark:border-gray-600"
                 placeholder="John Doe"
                 required
               />
@@ -878,7 +904,7 @@ const App = () => {
                     type="text"
                     value={joinFormData.instagram}
                     onChange={(e) => setJoinFormData({...joinFormData, instagram: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white dark:border-gray-600"
                     placeholder="@username"
                   />
                 </div>
@@ -892,7 +918,7 @@ const App = () => {
                     type="text"
                     value={joinFormData.tiktok}
                     onChange={(e) => setJoinFormData({...joinFormData, tiktok: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white dark:border-gray-600"
                     placeholder="@username"
                   />
                 </div>
@@ -906,7 +932,7 @@ const App = () => {
                     type="text"
                     value={joinFormData.twitter}
                     onChange={(e) => setJoinFormData({...joinFormData, twitter: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white dark:border-gray-600"
                     placeholder="@username"
                   />
                 </div>
@@ -920,7 +946,7 @@ const App = () => {
                     type="text"
                     value={joinFormData.linkedin}
                     onChange={(e) => setJoinFormData({...joinFormData, linkedin: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white dark:border-gray-600"
                     placeholder="username"
                   />
                 </div>
@@ -934,7 +960,7 @@ const App = () => {
                     type="text"
                     value={joinFormData.youtube}
                     onChange={(e) => setJoinFormData({...joinFormData, youtube: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white dark:border-gray-600"
                     placeholder="channelname"
                   />
                 </div>
@@ -948,7 +974,7 @@ const App = () => {
                     type="text"
                     value={joinFormData.twitch}
                     onChange={(e) => setJoinFormData({...joinFormData, twitch: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white dark:border-gray-600"
                     placeholder="@username"
                   />
                 </div>
@@ -965,7 +991,7 @@ const App = () => {
                 onChange={(e) => setJoinFormData({...joinFormData, bio: e.target.value})}
                 maxLength="100"
                 rows="3"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white dark:border-gray-600"
                 placeholder="Tell us about yourself..."
               />
             </div>

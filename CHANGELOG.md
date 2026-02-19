@@ -5,7 +5,9 @@
 ### Added
 - **ID Collision Handling**: Automatic retry mechanism for train creation that handles duplicate ID scenarios gracefully
 - **Enhanced Database Schema**: Added `locked` and `expires_at` columns to trains table
-- **Multi-Platform Support**: Support for Instagram, TikTok, Twitter, LinkedIn, YouTube, and Twitch
+- **Multi-Platform Support**: Support for Instagram, TikTok, X/Twitter, Facebook, WhatsApp, LinkedIn, YouTube, Telegram, Discord, GitHub, and Twitch
+- **Legal Compliance**: Updated footer with copyright notice and terms/privacy links
+- **Enhanced Validation**: Platform-specific validation for all 11 social media platforms
 - **Admin Features**: Host management capabilities including lock/unlock trains and kick participants
 - **Performance Improvements**: Avatar URL caching and rate limiting
 - **Export System Refactor**: Unified export interface with toggleable panel

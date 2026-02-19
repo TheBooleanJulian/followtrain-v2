@@ -9,9 +9,10 @@ A lightweight app that lets groups of people share and follow each other across 
 - Join a train by entering name and social media usernames
 - View all participants as profile cards with avatars
 - Click any social media handle to open profiles directly
-- **Enhanced export system** - Single export button with customizable platform selection
+- **Enhanced export system** - Single export button with customizable platform selection including all 11 platforms
 - **Smart username autocomplete** - Visual suggestions with avatar previews for duplicate names
 - **Edit your own entries** - Users can modify their own profile information
+- **Legal compliance** - Updated footer with copyright, terms, and privacy links
 - Copy shareable link or QR code with one click
 - **Admin controls** - Lock trains, kick participants, manage settings
 - No login or account required
@@ -117,9 +118,10 @@ See [ID_COLLISION_HANDLING.md](ID_COLLISION_HANDLING.md) for detailed documentat
 - **Detailed logging**: Console logs collision detection and retry attempts
 
 ### Multi-Platform Support
-- Instagram, TikTok, Twitter, LinkedIn, YouTube, Twitch
+- Instagram, TikTok, X/Twitter, Facebook, WhatsApp, LinkedIn, YouTube, Telegram, Discord, GitHub, Twitch
 - Platform-specific username validation
 - **LinkedIn profile URL requirement** for accurate profile linking
+- **WhatsApp phone number validation** for proper messaging
 - Dual-layer avatar system (primary platform + fallback)
 - Smart deep linking for mobile devices
 - Clean, simple input fields for all social media platforms

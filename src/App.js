@@ -1,8 +1,46 @@
 import React, { useState, useEffect } from 'react';
+import { Routes, Route } from 'react-router-dom';
 import { Moon, Sun } from 'lucide-react';
 import { Copy, Plus, QrCode } from 'lucide-react';
 import { supabase } from './supabaseClient';
 import QRCode from 'react-qr-code';
+import LegalPage from './LegalPage';
+
+// Footer component
+const Footer = () => (
+  <div className="mt-8 pt-6 border-t border-gray-200 text-center text-sm text-gray-600 dark:text-gray-400">
+    <p className="mb-2">
+      © 2026 TheBooleanJulian. All rights reserved.
+    </p>
+    <p>
+      Not affiliated with Meta, LinkedIn, X, or any listed platforms. |{' '}
+      <a 
+        href="/terms" 
+        className="text-purple-600 hover:underline dark:text-purple-400"
+      >
+        Terms
+      </a> 
+      |{' '}
+      <a 
+        href="/privacy" 
+        className="text-purple-600 hover:underline dark:text-purple-400"
+      >
+        Privacy
+      </a>
+    </p>
+    <p className="mt-2">
+      Created by{' '}
+      <a 
+        href="https://github.com/TheBooleanJulian" 
+        target="_blank" 
+        rel="noopener noreferrer"
+        className="text-purple-600 hover:underline dark:text-purple-400"
+      >
+        TheBooleanJulian
+      </a>
+    </p>
+  </div>
+);
 
 // Utility function to detect mobile devices
 const isMobileDevice = () => {
@@ -23,6 +61,11 @@ const createSmartLink = (platform, username) => {
     snapchat: `snapchat://add/${username.replace('@', '')}`,
     youtube: `youtube://user/${username.replace('@', '')}`,
     twitch: `twitch://channel/${username.replace('@', '')}`,
+    facebook: `fb://profile/${username.replace('@', '')}`,
+    whatsapp: `whatsapp://send?phone=${username.replace('@', '')}`,
+    telegram: `tg://resolve?domain=${username.replace('@', '')}`,
+    discord: `https://discord.com/users/${username.replace('@', '')}`,
+    github: `github://user/${username.replace('@', '')}`
   };
   
   // Define web URLs
@@ -33,6 +76,11 @@ const createSmartLink = (platform, username) => {
     snapchat: `https://snapchat.com/add/${username.replace('@', '')}`,
     youtube: `https://youtube.com/${username.replace('@', '')}`,
     twitch: `https://twitch.tv/${username.replace('@', '')}`,
+    facebook: `https://facebook.com/${username.replace('@', '')}`,
+    whatsapp: `https://wa.me/${username.replace('@', '')}`,
+    telegram: `https://t.me/${username.replace('@', '')}`,
+    discord: `https://discord.com/users/${username.replace('@', '')}`,
+    github: `https://github.com/${username.replace('@', '')}`
   };
   
   if (isMobile && deepLinks[platform]) {
@@ -315,6 +363,21 @@ const App = () => {
       case 'twitch':
         // Twitch: alphanumeric, underscores, max 50 chars
         return /^[a-zA-Z0-9_]{1,50}$/.test(cleanUsername);
+      case 'facebook':
+        // Facebook: alphanumeric, dots, underscores, max 50 chars
+        return /^[a-zA-Z0-9._]{1,50}$/.test(cleanUsername);
+      case 'whatsapp':
+        // WhatsApp: phone number validation (10-15 digits)
+        return /^[0-9]{10,15}$/.test(cleanUsername);
+      case 'telegram':
+        // Telegram: alphanumeric, underscores, max 32 chars
+        return /^[a-zA-Z0-9_]{1,32}$/.test(cleanUsername);
+      case 'discord':
+        // Discord: typically 4-digit discriminator or user ID
+        return /^[0-9]{4,20}$/.test(cleanUsername);
+      case 'github':
+        // GitHub: alphanumeric, dashes, underscores, max 39 chars
+        return /^[a-zA-Z0-9_-]{1,39}$/.test(cleanUsername);
       default:
         return true;
     }
@@ -457,7 +520,7 @@ const App = () => {
     }
     
     // Validate additional platforms
-    const platforms = ['instagram', 'tiktok', 'twitter', 'linkedin', 'youtube', 'twitch'];
+    const platforms = ['instagram', 'tiktok', 'twitter', 'linkedin', 'youtube', 'twitch', 'facebook', 'whatsapp', 'telegram', 'discord', 'github'];
     for (const platform of platforms) {
       if (sanitizedFormData[platform]) {
         if (platform === 'linkedin') {
@@ -648,7 +711,9 @@ const App = () => {
       youtube: `https://unavatar.io/youtube/${primaryHandle.replace(/^@/, '')}`,
       twitch: `https://unavatar.io/twitch/${primaryHandle.replace(/^@/, '')}`,
       tiktok: `https://unavatar.io/tiktok/${primaryHandle.replace(/^@/, '')}`,
-      linkedin: `https://unavatar.io/linkedin/${primaryHandle.replace(/^@/, '')}`
+      linkedin: `https://unavatar.io/linkedin/${primaryHandle.replace(/^@/, '')}`,
+      facebook: `https://unavatar.io/facebook/${primaryHandle.replace(/^@/, '')}`,
+      github: `https://unavatar.io/github/${primaryHandle.replace(/^@/, '')}`
     };
     
     // Return the primary platform avatar URL
@@ -703,7 +768,7 @@ const App = () => {
     }
     
     // Validate additional platforms
-    const platforms = ['instagram', 'tiktok', 'twitter', 'linkedin', 'youtube', 'twitch'];
+    const platforms = ['instagram', 'tiktok', 'twitter', 'linkedin', 'youtube', 'twitch', 'facebook', 'whatsapp', 'telegram', 'discord', 'github'];
     for (const platform of platforms) {
       if (sanitizedJoinData[platform]) {
         if (platform === 'linkedin') {
@@ -1117,7 +1182,12 @@ const App = () => {
     twitter: true,
     linkedin: true,
     youtube: true,
-    twitch: true
+    twitch: true,
+    facebook: true,
+    whatsapp: true,
+    telegram: true,
+    discord: true,
+    github: true
   });
   
   const [showExportPanel, setShowExportPanel] = useState(false);
@@ -1136,7 +1206,12 @@ const App = () => {
       twitter: selectAll,
       linkedin: selectAll,
       youtube: selectAll,
-      twitch: selectAll
+      twitch: selectAll,
+      facebook: selectAll,
+      whatsapp: selectAll,
+      telegram: selectAll,
+      discord: selectAll,
+      github: selectAll
     });
   };
   
@@ -1151,10 +1226,15 @@ const App = () => {
     const platformNames = {
       instagram: 'Instagram',
       tiktok: 'TikTok',
-      twitter: 'Twitter',
+      twitter: 'X/Twitter',
       linkedin: 'LinkedIn',
       youtube: 'YouTube',
-      twitch: 'Twitch'
+      twitch: 'Twitch',
+      facebook: 'Facebook',
+      whatsapp: 'WhatsApp',
+      telegram: 'Telegram',
+      discord: 'Discord',
+      github: 'GitHub'
     };
     
     let exportText = `Train: ${trainName || trainId}\nParticipants: ${participants.length}\n\n`;
@@ -1164,7 +1244,11 @@ const App = () => {
       
       Object.entries(selectedPlatforms).forEach(([platform, isSelected]) => {
         if (isSelected && participant[`${platform}_username`]) {
-          exportText += `   ${platformNames[platform]}: @${participant[`${platform}_username`]}\n`;
+          // Format based on platform type
+          const formattedValue = platform === 'whatsapp' 
+            ? participant[`${platform}_username`] 
+            : `@${participant[`${platform}_username`]}`;
+          exportText += `   ${platformNames[platform]}: ${formattedValue}\n`;
         }
       });
       
@@ -1184,10 +1268,15 @@ const App = () => {
     const platformNames = {
       instagram: 'Instagram',
       tiktok: 'TikTok',
-      twitter: 'Twitter',
+      twitter: 'X/Twitter',
       linkedin: 'LinkedIn',
       youtube: 'YouTube',
-      twitch: 'Twitch'
+      twitch: 'Twitch',
+      facebook: 'Facebook',
+      whatsapp: 'WhatsApp',
+      telegram: 'Telegram',
+      discord: 'Discord',
+      github: 'GitHub'
     };
     
     let content = `Train: ${trainName || trainId}\nParticipants: ${participants.length}\n\n`;
@@ -1197,7 +1286,11 @@ const App = () => {
       
       Object.entries(selectedPlatforms).forEach(([platform, isSelected]) => {
         if (isSelected && participant[`${platform}_username`]) {
-          content += `   ${platformNames[platform]}: @${participant[`${platform}_username`]}\n`;
+          // Format based on platform type
+          const formattedValue = platform === 'whatsapp' 
+            ? participant[`${platform}_username`] 
+            : `@${participant[`${platform}_username`]}`;
+          content += `   ${platformNames[platform]}: ${formattedValue}\n`;
         }
       });
       
@@ -1244,7 +1337,7 @@ const App = () => {
         </div>
         <h1 className="text-4xl font-bold text-gray-800 mb-2 dark:text-white">FollowTrain</h1>
         <p className="text-gray-600 mb-1 dark:text-gray-300">Share and follow each other on all social media platforms</p>
-        <p className="text-gray-500 text-sm mb-8 dark:text-gray-400">No login required. Fast, easy, and fun!</p>
+        <p className="text-gray-500 text-sm mb-8 dark:text-gray-400">No login required. Fast, easy, and safe!</p>
         {error && (
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4 dark:bg-red-900 dark:border-red-700 dark:text-red-200">
             {error}
@@ -1290,19 +1383,7 @@ const App = () => {
           </form>
           
           {/* Footer */}
-          <div className="mt-8 pt-6 border-t border-gray-200 text-center text-sm text-gray-600 dark:text-gray-400">
-            <p>
-              Created by{' '}
-              <a 
-                href="https://github.com/TheBooleanJulian" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-purple-600 hover:underline dark:text-purple-400"
-              >
-                TheBooleanJulian
-              </a>
-            </p>
-          </div>
+          <Footer />
         </div>
       </div>
     </div>
@@ -1377,7 +1458,7 @@ const App = () => {
                 <option value="">Select Platform</option>
                 <option value="instagram">Instagram</option>
                 <option value="tiktok">TikTok</option>
-                <option value="twitter">Twitter</option>
+                <option value="twitter">X/Twitter</option>
                 <option value="youtube">YouTube</option>
                 <option value="twitch">Twitch</option>
                 <option value="linkedin">LinkedIn</option>
@@ -1531,19 +1612,7 @@ const App = () => {
         </button>
           
         {/* Footer */}
-        <div className="mt-8 pt-6 border-t border-gray-200 text-center text-sm text-gray-600 dark:text-gray-400">
-          <p>
-            Created by{' '}
-            <a 
-              href="https://github.com/TheBooleanJulian" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="text-purple-600 hover:underline dark:text-purple-400"
-            >
-              TheBooleanJulian
-            </a>
-          </p>
-        </div>
+        <Footer />
       </div>
     </div>
   );
@@ -2035,19 +2104,7 @@ const App = () => {
         )}
         
         {/* Footer */}
-        <div className="max-w-4xl mx-auto p-4 mt-8 pt-6 border-t border-gray-200 text-center text-sm text-gray-600 dark:text-gray-400">
-          <p>
-            Created by{' '}
-            <a 
-              href="https://github.com/TheBooleanJulian" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="text-purple-600 hover:underline dark:text-purple-400"
-            >
-              TheBooleanJulian
-            </a>
-          </p>
-        </div>
+        <Footer />
       </div>
     );
   };
@@ -2150,7 +2207,7 @@ const App = () => {
                   <option value="">Select Platform</option>
                   <option value="instagram">Instagram</option>
                   <option value="tiktok">TikTok</option>
-                  <option value="twitter">Twitter</option>
+                  <option value="twitter">X/Twitter</option>
                   <option value="youtube">YouTube</option>
                   <option value="twitch">Twitch</option>
                   <option value="linkedin">LinkedIn</option>
@@ -2362,19 +2419,7 @@ const App = () => {
         </div>
         
         {/* Footer */}
-        <div className="mt-8 pt-6 border-t border-gray-200 text-center text-sm text-gray-600 dark:text-gray-400">
-          <p>
-            Created by{' '}
-            <a 
-              href="https://github.com/TheBooleanJulian" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="text-purple-600 hover:underline dark:text-purple-400"
-            >
-              TheBooleanJulian
-            </a>
-          </p>
-        </div>
+        <Footer />
       </div>
     </div>
   );
@@ -2382,12 +2427,20 @@ const App = () => {
   // Main render
   return (
     <div className="font-sans">
-      {currentView === 'home' && renderHomeView()}
-      {currentView === 'create' && renderCreateView()}
-      {currentView === 'train' && renderTrainView()}
-      {currentView === 'debug' && renderDebugView()}
-      {renderJoinModal()}
-      {renderQRModal()}
+      <Routes>
+        <Route path="/" element={
+          <>
+            {currentView === 'home' && renderHomeView()}
+            {currentView === 'create' && renderCreateView()}
+            {currentView === 'train' && renderTrainView()}
+            {currentView === 'debug' && renderDebugView()}
+            {renderJoinModal()}
+            {renderQRModal()}
+          </>
+        } />
+        <Route path="/terms" element={<LegalPage type="terms" />} />
+        <Route path="/privacy" element={<LegalPage type="privacy" />} />
+      </Routes>
     </div>
   );
 };

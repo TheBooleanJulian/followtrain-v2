@@ -1892,7 +1892,7 @@ const App = () => {
                         )}
                       </div>
                       {/* Edit button for own entries or admin */}
-                      {(participant.id === editingParticipantId || (!isAdmin && participant.admin_token === adminToken)) && (
+                      {(participant.id === editingParticipantId || isAdmin || (!isAdmin && participant.admin_token === adminToken)) && (
                         <button
                           onClick={() => editingParticipantId === participant.id ? cancelEditing() : startEditing(participant)}
                           className={`text-xs px-2 py-1 rounded ${editingParticipantId === participant.id ? 'bg-gray-200 text-gray-700 hover:bg-gray-300' : 'bg-blue-100 text-blue-700 hover:bg-blue-200'} transition-colors dark:bg-opacity-20`}

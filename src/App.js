@@ -1217,21 +1217,6 @@ const App = () => {
             Create a Train
           </button>
           
-          {/* Footer */}
-          <div className="mt-8 pt-6 border-t border-gray-200 text-center text-sm text-gray-600 dark:text-gray-400">
-            <p>
-              Created by{' '}
-              <a 
-                href="https://github.com/TheBooleanJulian" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-purple-600 hover:underline dark:text-purple-400"
-              >
-                TheBooleanJulian
-              </a>
-            </p>
-          </div>
-          
           <div className="relative py-4">
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-gray-300 dark:border-gray-600"></div>
@@ -1258,6 +1243,21 @@ const App = () => {
               {loading ? 'Joining...' : 'Join Train'}
             </button>
           </form>
+          
+          {/* Footer */}
+          <div className="mt-8 pt-6 border-t border-gray-200 text-center text-sm text-gray-600 dark:text-gray-400">
+            <p>
+              Created by{' '}
+              <a 
+                href="https://github.com/TheBooleanJulian" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-purple-600 hover:underline dark:text-purple-400"
+              >
+                TheBooleanJulian
+              </a>
+            </p>
+          </div>
         </div>
       </div>
     </div>

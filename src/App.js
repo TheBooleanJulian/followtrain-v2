@@ -5,6 +5,8 @@ import { supabase } from './supabaseClient';
 import QRCode from 'react-qr-code';
 
 const App = () => {
+  console.log('App component mounted');
+  
   const [darkMode, setDarkMode] = useState(false); // Default to false initially
   
   // Set the initial dark mode after component mounts
@@ -20,6 +22,16 @@ const App = () => {
       }
     }
   }, []); // Run once after mount
+  
+  // Debug: Log every second to verify JavaScript is running
+  useEffect(() => {
+    console.log('App is running, time:', new Date().toISOString());
+    const interval = setInterval(() => {
+      console.log('Heartbeat:', new Date().toISOString());
+    }, 5000);
+    
+    return () => clearInterval(interval);
+  }, []);
   
   const [currentView, setCurrentView] = useState('home');
   const [trainId, setTrainId] = useState('');
@@ -356,12 +368,28 @@ const App = () => {
         </div>
         <h1 className="text-3xl font-bold text-gray-800 mb-2 dark:text-white">FollowTrain</h1>
         <p className="text-gray-600 mb-8 dark:text-gray-300">A lightweight app to share and follow each other on Instagram</p>
-        <button
-          onClick={() => setCurrentView('create')}
-          className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-lg font-medium hover:opacity-90 transition-opacity w-full"
-        >
-          Create a Train
-        </button>
+        <div className="space-y-4">
+          <button
+            onClick={() => {
+              console.log('Create Train button clicked!');
+              console.log('Current time:', new Date().toISOString());
+              setCurrentView('create');
+            }}
+            className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-lg font-medium hover:opacity-90 transition-opacity w-full"
+          >
+            Create a Train
+          </button>
+          
+          <button
+            onClick={() => {
+              console.log('TEST BUTTON CLICKED!');
+              alert('Test button works! Time: ' + new Date().toISOString());
+            }}
+            className="bg-blue-500 text-white px-6 py-3 rounded-lg font-medium hover:opacity-90 transition-opacity w-full"
+          >
+            🔧 Test Button (Debug)
+          </button>
+        </div>
       </div>
     </div>
   );

@@ -28,9 +28,19 @@ const App = () => {
     console.log('App is running, time:', new Date().toISOString());
     const interval = setInterval(() => {
       console.log('Heartbeat:', new Date().toISOString());
-    }, 5000);
+    }, 10000); // Reduced to every 10 seconds to reduce console spam
     
     return () => clearInterval(interval);
+  }, []);
+  
+  // Optimize loading by deferring non-critical operations
+  useEffect(() => {
+    // Small delay to ensure DOM is fully ready
+    const timer = setTimeout(() => {
+      console.log('App fully initialized');
+    }, 100);
+    
+    return () => clearTimeout(timer);
   }, []);
   
   const [currentView, setCurrentView] = useState('home');
@@ -172,6 +182,28 @@ const App = () => {
            formData.linkedin || formData.youtube || formData.twitch;
   };
 
+  // Test database connection
+  const testDatabaseConnection = async () => {
+    try {
+      console.log('Testing database connection...');
+      const { error } = await supabase
+        .from('trains')
+        .select('id')
+        .limit(1);
+      
+      if (error) {
+        console.error('Database connection test failed:', error);
+        alert(`Database Error: ${error.message}`);
+      } else {
+        console.log('Database connection successful');
+        alert('Database connection successful!');
+      }
+    } catch (err) {
+      console.error('Database test error:', err);
+      alert(`Connection Error: ${err.message}`);
+    }
+  };
+
   // Toggle dark mode
   const toggleDarkMode = () => {
     setDarkMode(!darkMode);
@@ -217,6 +249,23 @@ const App = () => {
     };
 
     const newTrainId = generateId();
+
+    // Check if tables exist first
+    try {
+      const { error: tableError } = await supabase
+        .from('trains')
+        .select('id')
+        .limit(1);
+      
+      if (tableError && tableError.message.includes('not found')) {
+        console.error('Database tables not found:', tableError);
+        setError('Database not set up. Please run the schema.sql file in your Supabase SQL editor.');
+        setLoading(false);
+        return;
+      }
+    } catch (checkError) {
+      console.error('Table check failed:', checkError);
+    }
 
     // Insert train
     const { data: trainData, error: trainError } = await supabase
@@ -388,6 +437,13 @@ const App = () => {
             className="bg-blue-500 text-white px-6 py-3 rounded-lg font-medium hover:opacity-90 transition-opacity w-full"
           >
             🔧 Test Button (Debug)
+          </button>
+          
+          <button
+            onClick={testDatabaseConnection}
+            className="bg-green-500 text-white px-6 py-3 rounded-lg font-medium hover:opacity-90 transition-opacity w-full"
+          >
+            🧪 Test Database Connection
           </button>
         </div>
       </div>

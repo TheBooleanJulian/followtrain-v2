@@ -1522,80 +1522,82 @@ const App = () => {
                 Export Options
               </button>
               
-              {/* Export Panel */}
-              {showExportPanel && (
-                <div className="mt-4 p-4 bg-white rounded-lg shadow-lg border border-gray-200 dark:bg-gray-800 dark:border-gray-700">
-                  <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-lg font-semibold text-gray-800 dark:text-white">Export Options</h3>
-                    <button 
-                      onClick={() => setShowExportPanel(false)}
-                      className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-                    >
-                      ✕
-                    </button>
-                  </div>
-                  
-                  {/* Export Actions */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
-                    <button
-                      onClick={copyAllHandles}
-                      className="flex items-center justify-center gap-2 bg-blue-600 text-white px-4 py-3 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors w-full"
-                    >
-                      <Copy size={16} />
-                      Copy to Clipboard
-                    </button>
-                    <button
-                      onClick={() => exportToFile('txt')}
-                      className="flex items-center justify-center gap-2 bg-indigo-600 text-white px-4 py-3 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors w-full"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
-                      </svg>
-                      Download TXT File
-                    </button>
-                  </div>
-                  
-                  {/* Platform Selection with Checkboxes */}
-                  <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
-                    <div className="flex justify-between items-center mb-3">
-                      <h4 className="font-medium text-gray-700 dark:text-gray-300">Select Platforms to Export:</h4>
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => toggleAllPlatforms(true)}
-                          className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded hover:bg-green-200 dark:bg-green-900/30 dark:text-green-300"
-                        >
-                          Select All
-                        </button>
-                        <button
-                          onClick={() => toggleAllPlatforms(false)}
-                          className="text-xs bg-red-100 text-red-800 px-2 py-1 rounded hover:bg-red-200 dark:bg-red-900/30 dark:text-red-300"
-                        >
-                          Clear All
-                        </button>
-                      </div>
-                    </div>
-                    
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                      {Object.entries(selectedPlatforms).map(([platform, isSelected]) => (
-                        <label key={platform} className="flex items-center gap-2 cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={isSelected}
-                            onChange={() => togglePlatformSelection(platform)}
-                            className="h-4 w-4 text-purple-600 rounded border-gray-300 focus:ring-purple-500 dark:bg-gray-700 dark:border-gray-600"
-                          />
-                          <span className="text-sm text-gray-700 dark:text-gray-300 capitalize">
-                            {platform}
-                          </span>
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              )}
+
             </div>
           </div>
         </div>
+
+        {/* Export Panel */}
+        {showExportPanel && (
+          <div className="max-w-4xl mx-auto p-4 mt-4 bg-blue-50 border border-blue-200 rounded-xl dark:bg-blue-900/20 dark:border-blue-700">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-bold text-blue-800 dark:text-blue-200">Export Options</h3>
+              <button 
+                onClick={() => setShowExportPanel(false)}
+                className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-200"
+              >
+                Close
+              </button>
+            </div>
+            
+            {/* Export Actions */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
+              <button
+                onClick={copyAllHandles}
+                className="flex items-center justify-center gap-2 bg-blue-600 text-white px-4 py-3 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors w-full"
+              >
+                <Copy size={16} />
+                Copy to Clipboard
+              </button>
+              <button
+                onClick={() => exportToFile('txt')}
+                className="flex items-center justify-center gap-2 bg-indigo-600 text-white px-4 py-3 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors w-full"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
+                </svg>
+                Download TXT File
+              </button>
+            </div>
+            
+            {/* Platform Selection with Checkboxes */}
+            <div className="border-t border-blue-200 dark:border-blue-700 pt-4">
+              <div className="flex justify-between items-center mb-3">
+                <h4 className="font-medium text-blue-700 dark:text-blue-300">Select Platforms to Export:</h4>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => toggleAllPlatforms(true)}
+                    className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded hover:bg-green-200 dark:bg-green-900/30 dark:text-green-300"
+                  >
+                    Select All
+                  </button>
+                  <button
+                    onClick={() => toggleAllPlatforms(false)}
+                    className="text-xs bg-red-100 text-red-800 px-2 py-1 rounded hover:bg-red-200 dark:bg-red-900/30 dark:text-red-300"
+                  >
+                    Clear All
+                  </button>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                {Object.entries(selectedPlatforms).map(([platform, isSelected]) => (
+                  <label key={platform} className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={isSelected}
+                      onChange={() => togglePlatformSelection(platform)}
+                      className="rounded text-blue-600 focus:ring-blue-500"
+                    />
+                    <span className="text-sm capitalize text-blue-700 dark:text-blue-300">
+                      {platform}
+                    </span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Participants Grid */}
         <div className="p-4 max-w-4xl mx-auto">

@@ -20,6 +20,11 @@ CREATE TABLE participants (
   linkedin_username VARCHAR(100),
   youtube_username VARCHAR(100),
   twitch_username VARCHAR(50),
+  facebook_username VARCHAR(50),
+  whatsapp_number VARCHAR(15),
+  telegram_username VARCHAR(32),
+  discord_id VARCHAR(20),
+  github_username VARCHAR(39),
   bio VARCHAR(100),
   is_host BOOLEAN DEFAULT FALSE,
   admin_token VARCHAR(24), -- For host admin access

@@ -22,7 +22,13 @@
       }
     },
     {
-      "src": "/(.+\\.(png|jpg|jpeg|gif|svg|ico|webp))$",
+      "src": "/(TERMS|PRIVACY)\\.txt$",
+      "headers": {
+        "content-type": "text/plain; charset=utf-8"
+      }
+    },
+    {
+      "src": "/(.+\\.(png|jpg|jpeg|gif|svg|ico|webp|txt))$",
       "dest": "/$1"
     },
     {

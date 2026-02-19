@@ -16,6 +16,8 @@
 - **Security Enhancement**: Comprehensive input sanitization to prevent prompt injection attacks
 - **User Edit Functionality**: Participants can edit their own entries with full form validation
 - **Train Rename Feature**: Hosts can rename trains through admin panel
+- **Environment Configuration**: `.env` file with Supabase keys for local development
+- **Vercel Deployment Fix**: Proper routing configuration for legal text files
 
 ### Changed
 - **Database Structure**: Extended participants table with multiple platform username fields
@@ -25,6 +27,8 @@
 - **UI/UX**: Improved button styling and visual hierarchy
 - **Input Fields**: Removed problematic autocomplete feature that was causing typing interruptions and false matches
 - **Social Media Inputs**: Simplified to regular input fields for better user experience
+- **Vercel Configuration**: Updated routing rules to properly serve static text files
+- **Legal Page Component**: Enhanced error handling and logging for better debugging
 
 ### Fixed
 - **Train Creation Reliability**: Eliminated potential failure points from ID collisions
@@ -32,3 +36,6 @@
 - **Dark Mode Visibility**: QR code button color contrast issues
 - **Build Issues**: ESLint warnings and cross-platform compatibility
 - **User Experience**: Added visual aids for username disambiguation
+- **Legal Pages on Vercel**: Fixed routing configuration to properly serve TERMS.txt and PRIVACY.txt files
+- **Static File Serving**: Corrected Vercel routes for .txt files with proper content-type headers
+- **Environment Variables**: Created secure .env file setup with proper .gitignore configuration

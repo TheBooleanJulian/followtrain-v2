@@ -13,6 +13,7 @@ A lightweight app that lets groups of people share and follow each other across 
 - **Smart username autocomplete** - Visual suggestions with avatar previews for duplicate names
 - **Edit your own entries** - Users can modify their own profile information
 - **Legal compliance** - Updated footer with copyright, terms, and privacy links
+- **Working legal pages** - Terms and Privacy pages properly served on Vercel deployment
 - Copy shareable link or QR code with one click
 - **Admin controls** - Lock trains, kick participants, manage settings
 - No login or account required

@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
-const LegalPage = () => {
-  const { type } = useParams();
+const LegalPage = ({ type }) => {
   const navigate = useNavigate();
   const [content, setContent] = useState('');
   const [loading, setLoading] = useState(true);
@@ -11,12 +10,19 @@ const LegalPage = () => {
     const loadContent = async () => {
       try {
         const fileName = type === 'terms' ? 'TERMS.txt' : 'PRIVACY.txt';
+        console.log(`Attempting to fetch: /${fileName}`);
         const response = await fetch(`/${fileName}`);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
         const text = await response.text();
+        console.log(`Successfully loaded ${fileName}, length: ${text.length}`);
         setContent(text);
       } catch (error) {
         console.error('Error loading legal content:', error);
-        setContent('Content not available.');
+        setContent(`Content not available. Error: ${error.message}`);
       } finally {
         setLoading(false);
       }

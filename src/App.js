@@ -179,6 +179,11 @@ const App = () => {
     linkedin: '',
     youtube: '',
     twitch: '',
+    facebook: '',
+    whatsapp: '',
+    telegram: '',
+    discord: '',
+    github: '',
     bio: ''
   });
   
@@ -193,6 +198,11 @@ const App = () => {
     linkedin: '',
     youtube: '',
     twitch: '',
+    facebook: '',
+    whatsapp: '',
+    telegram: '',
+    discord: '',
+    github: '',
     bio: ''
   });
   const [createFormData, setCreateFormData] = useState({
@@ -206,6 +216,11 @@ const App = () => {
     linkedin: '',
     youtube: '',
     twitch: '',
+    facebook: '',
+    whatsapp: '',
+    telegram: '',
+    discord: '',
+    github: '',
     bio: ''
   });
   const [loading, setLoading] = useState(false);
@@ -221,6 +236,9 @@ const App = () => {
     
     if (path === '/debug') {
       setCurrentView('debug');
+    } else if (path === '/terms' || path === '/privacy') {
+      // Let React Router handle these paths - don't set currentView
+      return;
     } else if (trainParam) {
       setTrainId(trainParam.toUpperCase());
       setCurrentView('train');
@@ -655,6 +673,11 @@ const App = () => {
       linkedin_username: sanitizedLinkedin,
       youtube_username: sanitizedFormData.youtube ? sanitizedFormData.youtube.replace(/^@/, '').toLowerCase() : null,
       twitch_username: sanitizedFormData.twitch ? sanitizedFormData.twitch.replace(/^@/, '').toLowerCase() : null,
+      facebook_username: sanitizedFormData.facebook ? sanitizedFormData.facebook.replace(/^@/, '').toLowerCase() : null,
+      whatsapp_number: sanitizedFormData.whatsapp || null,
+      telegram_username: sanitizedFormData.telegram ? sanitizedFormData.telegram.replace(/^@/, '').toLowerCase() : null,
+      discord_id: sanitizedFormData.discord || null,
+      github_username: sanitizedFormData.github ? sanitizedFormData.github.replace(/^@/, '').toLowerCase() : null,
       bio: sanitizedFormData.bio,
       is_host: true,
       admin_token: newAdminToken,
@@ -1002,6 +1025,11 @@ const App = () => {
       linkedin: participant.linkedin_username || '',
       youtube: participant.youtube_username || '',
       twitch: participant.twitch_username || '',
+      facebook: participant.facebook_username || '',
+      whatsapp: participant.whatsapp_number || '',
+      telegram: participant.telegram_username || '',
+      discord: participant.discord_id || '',
+      github: participant.github_username || '',
       bio: participant.bio || ''
     });
   };
@@ -1017,6 +1045,11 @@ const App = () => {
       linkedin: '',
       youtube: '',
       twitch: '',
+      facebook: '',
+      whatsapp: '',
+      telegram: '',
+      discord: '',
+      github: '',
       bio: ''
     });
   };
@@ -1090,6 +1123,11 @@ const App = () => {
               linkedin_username: sanitizedLinkedin,
               youtube_username: sanitizedEditData.youtube ? sanitizedEditData.youtube.replace(/^@/, '').toLowerCase() : null,
               twitch_username: sanitizedEditData.twitch ? sanitizedEditData.twitch.replace(/^@/, '').toLowerCase() : null,
+              facebook_username: sanitizedEditData.facebook ? sanitizedEditData.facebook.replace(/^@/, '').toLowerCase() : null,
+              whatsapp_number: sanitizedEditData.whatsapp || null,
+              telegram_username: sanitizedEditData.telegram ? sanitizedEditData.telegram.replace(/^@/, '').toLowerCase() : null,
+              discord_id: sanitizedEditData.discord || null,
+              github_username: sanitizedEditData.github ? sanitizedEditData.github.replace(/^@/, '').toLowerCase() : null,
               bio: sanitizedEditData.bio
             }
           : p
@@ -1104,6 +1142,11 @@ const App = () => {
         linkedin: '',
         youtube: '',
         twitch: '',
+        facebook: '',
+        whatsapp: '',
+        telegram: '',
+        discord: '',
+        github: '',
         bio: ''
       });
       setError('');
@@ -1579,6 +1622,78 @@ const App = () => {
                 />
                 <p className="text-xs text-gray-500 mt-1">Letters, numbers, underscores (max 50 chars)</p>
               </div>
+              
+              <div>
+                <label className="block text-gray-700 text-sm font-medium mb-1" htmlFor="facebook">
+                  Facebook Profile URL
+                </label>
+                <input
+                  id="facebook"
+                  type="text"
+                  value={createFormData.facebook}
+                  onChange={(e) => setCreateFormData({...createFormData, facebook: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white dark:border-gray-600"
+                  placeholder="https://facebook.com/your-profile"
+                />
+                <p className="text-xs text-gray-500 mt-1">Please paste your full profile link</p>
+              </div>
+              
+              <div>
+                <label className="block text-gray-700 text-sm font-medium mb-1" htmlFor="whatsapp">
+                  WhatsApp Number
+                </label>
+                <input
+                  id="whatsapp"
+                  type="text"
+                  value={createFormData.whatsapp}
+                  onChange={(e) => setCreateFormData({...createFormData, whatsapp: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white dark:border-gray-600"
+                  placeholder="+1234567890"
+                />
+                <p className="text-xs text-gray-500 mt-1">Include country code</p>
+              </div>
+              
+              <div>
+                <label className="block text-gray-700 text-sm font-medium mb-1" htmlFor="telegram">
+                  Telegram Username
+                </label>
+                <input
+                  id="telegram"
+                  type="text"
+                  value={createFormData.telegram}
+                  onChange={(e) => setCreateFormData({...createFormData, telegram: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white dark:border-gray-600"
+                  placeholder="@username"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-gray-700 text-sm font-medium mb-1" htmlFor="discord">
+                  Discord ID
+                </label>
+                <input
+                  id="discord"
+                  type="text"
+                  value={createFormData.discord}
+                  onChange={(e) => setCreateFormData({...createFormData, discord: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white dark:border-gray-600"
+                  placeholder="username#1234 or user ID"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-gray-700 text-sm font-medium mb-1" htmlFor="github">
+                  GitHub Username
+                </label>
+                <input
+                  id="github"
+                  type="text"
+                  value={createFormData.github}
+                  onChange={(e) => setCreateFormData({...createFormData, github: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white dark:border-gray-600"
+                  placeholder="@username"
+                />
+              </div>
             </div>
           </div>
           
@@ -1863,6 +1978,61 @@ const App = () => {
                             type="text"
                             value={editFormData.twitch}
                             onChange={(e) => setEditFormData({...editFormData, twitch: e.target.value})}
+                            placeholder="@username"
+                            className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 dark:bg-gray-600 dark:text-white dark:border-gray-500"
+                          />
+                        </div>
+                        
+                        <div>
+                          <label className="block text-xs font-medium text-gray-700 mb-1 dark:text-gray-300">Facebook</label>
+                          <input
+                            type="text"
+                            value={editFormData.facebook}
+                            onChange={(e) => setEditFormData({...editFormData, facebook: e.target.value})}
+                            placeholder="https://facebook.com/your-profile"
+                            className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 dark:bg-gray-600 dark:text-white dark:border-gray-500"
+                          />
+                        </div>
+                        
+                        <div>
+                          <label className="block text-xs font-medium text-gray-700 mb-1 dark:text-gray-300">WhatsApp</label>
+                          <input
+                            type="text"
+                            value={editFormData.whatsapp}
+                            onChange={(e) => setEditFormData({...editFormData, whatsapp: e.target.value})}
+                            placeholder="+1234567890"
+                            className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 dark:bg-gray-600 dark:text-white dark:border-gray-500"
+                          />
+                        </div>
+                        
+                        <div>
+                          <label className="block text-xs font-medium text-gray-700 mb-1 dark:text-gray-300">Telegram</label>
+                          <input
+                            type="text"
+                            value={editFormData.telegram}
+                            onChange={(e) => setEditFormData({...editFormData, telegram: e.target.value})}
+                            placeholder="@username"
+                            className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 dark:bg-gray-600 dark:text-white dark:border-gray-500"
+                          />
+                        </div>
+                        
+                        <div>
+                          <label className="block text-xs font-medium text-gray-700 mb-1 dark:text-gray-300">Discord</label>
+                          <input
+                            type="text"
+                            value={editFormData.discord}
+                            onChange={(e) => setEditFormData({...editFormData, discord: e.target.value})}
+                            placeholder="username#1234 or user ID"
+                            className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 dark:bg-gray-600 dark:text-white dark:border-gray-500"
+                          />
+                        </div>
+                        
+                        <div>
+                          <label className="block text-xs font-medium text-gray-700 mb-1 dark:text-gray-300">GitHub</label>
+                          <input
+                            type="text"
+                            value={editFormData.github}
+                            onChange={(e) => setEditFormData({...editFormData, github: e.target.value})}
                             placeholder="@username"
                             className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 dark:bg-gray-600 dark:text-white dark:border-gray-500"
                           />
@@ -2323,6 +2493,78 @@ const App = () => {
                     placeholder="@username"
                   />
                 </div>
+                
+                <div>
+                  <label className="block text-gray-700 text-sm font-medium mb-1" htmlFor="joinFacebook">
+                    Facebook Profile URL
+                  </label>
+                  <input
+                    id="joinFacebook"
+                    type="text"
+                    value={joinFormData.facebook}
+                    onChange={(e) => setJoinFormData({...joinFormData, facebook: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white dark:border-gray-600"
+                    placeholder="https://facebook.com/your-profile"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Please paste your full profile link</p>
+                </div>
+                
+                <div>
+                  <label className="block text-gray-700 text-sm font-medium mb-1" htmlFor="joinWhatsapp">
+                    WhatsApp Number
+                  </label>
+                  <input
+                    id="joinWhatsapp"
+                    type="text"
+                    value={joinFormData.whatsapp}
+                    onChange={(e) => setJoinFormData({...joinFormData, whatsapp: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white dark:border-gray-600"
+                    placeholder="+1234567890"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Include country code</p>
+                </div>
+                
+                <div>
+                  <label className="block text-gray-700 text-sm font-medium mb-1" htmlFor="joinTelegram">
+                    Telegram Username
+                  </label>
+                  <input
+                    id="joinTelegram"
+                    type="text"
+                    value={joinFormData.telegram}
+                    onChange={(e) => setJoinFormData({...joinFormData, telegram: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white dark:border-gray-600"
+                    placeholder="@username"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-gray-700 text-sm font-medium mb-1" htmlFor="joinDiscord">
+                    Discord ID
+                  </label>
+                  <input
+                    id="joinDiscord"
+                    type="text"
+                    value={joinFormData.discord}
+                    onChange={(e) => setJoinFormData({...joinFormData, discord: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white dark:border-gray-600"
+                    placeholder="username#1234 or user ID"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-gray-700 text-sm font-medium mb-1" htmlFor="joinGithub">
+                    GitHub Username
+                  </label>
+                  <input
+                    id="joinGithub"
+                    type="text"
+                    value={joinFormData.github}
+                    onChange={(e) => setJoinFormData({...joinFormData, github: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white dark:border-gray-600"
+                    placeholder="@username"
+                  />
+                </div>
               </div>
             </div>
             
@@ -2426,6 +2668,15 @@ const App = () => {
     </div>
   );
 
+  // Catch all route handler component
+  const CatchAllRoute = () => {
+    useEffect(() => {
+      setCurrentView('home');
+    }, []);
+    
+    return renderHomeView();
+  };
+
   // Main render
   return (
     <div className="font-sans">
@@ -2443,6 +2694,8 @@ const App = () => {
         <Route path="/debug" element={renderDebugView()} />
         <Route path="/terms" element={<LegalPage type="terms" />} />
         <Route path="/privacy" element={<LegalPage type="privacy" />} />
+        {/* Catch all route - redirect to home for unknown paths */}
+        <Route path="*" element={<CatchAllRoute />} />
       </Routes>
     </div>
   );

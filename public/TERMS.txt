@@ -252,11 +252,6 @@ FollowTrain shall not be liable for any delay or failure to perform resulting fr
 
 During such events, service functionality may be degraded, interrupted, or unavailable.
 
-
-Optional (Very Strong Shield – Recommended for Growth Phase)
-
-If you want even stronger protection, consider also adding:
-
 18. Maximum Liability Cap
 
 Limit total liability to the greater of:

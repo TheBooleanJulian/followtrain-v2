@@ -1,6 +1,44 @@
-# FollowTrain
+# 🚂 FollowTrain
+
+https://followtrain-v2.vercel.app/
+
+## At events?
+
+Instead of:
+
+"Wait what's your IG?"
+
+"Spell that?"
+
+"Pass your phone."
+
+
+Just:
+
+
+**1 QR code**
+
+**Everyone joins**
+
+**Everyone follows everyone**
+
+
+**Done.**
+
+
+No app.
+
+No login.
+
+Deletes in 72 hours.
+
+
+It's AirDrop for socials. 🔥
+
 
 A lightweight app that lets groups of people share and follow each other across multiple social media platforms via a shared link. No login required.
+
+FollowTrain v2 is a lightweight React application designed to help groups share and follow each other across social media platforms through a simple, shared-link system. The project eliminates the need for user authentication while enabling real-time collaboration among participants. Users can create a "train" (a group), invite others via a unique shareable URL, and manage participants in real time. The application emphasizes simplicity, privacy, and cross-platform social media integration without requiring accounts or API calls to social networks.
 
 ## Features
 

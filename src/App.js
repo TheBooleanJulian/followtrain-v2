@@ -224,6 +224,8 @@ const App = () => {
     } else if (trainParam) {
       setTrainId(trainParam.toUpperCase());
       setCurrentView('train');
+    } else if (path === '/' || path === '') {
+      setCurrentView('home');
     }
   }, []);
 
@@ -2438,6 +2440,7 @@ const App = () => {
             {renderQRModal()}
           </>
         } />
+        <Route path="/debug" element={renderDebugView()} />
         <Route path="/terms" element={<LegalPage type="terms" />} />
         <Route path="/privacy" element={<LegalPage type="privacy" />} />
       </Routes>

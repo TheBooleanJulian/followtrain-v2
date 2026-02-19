@@ -5,6 +5,7 @@ A lightweight app that lets groups of people share and follow each other on Inst
 ## Features
 
 - Create a follow train with a unique shareable URL
+- **Automatic ID collision handling** - Never fails due to duplicate train IDs
 - Join a train by entering name, Instagram username, and optional bio
 - View all participants as profile cards
 - Click any card to open that person's Instagram profile in a new tab
@@ -69,15 +70,24 @@ The application uses two tables:
 - `id`: String (6-char random alphanumeric, uppercase) - Primary Key
 - `name`: String (required, max 50 chars)
 - `created_at`: Timestamp
+- `locked`: Boolean (default: false) - Lock train to prevent new joins
+- `expires_at`: Timestamp (default: 72 hours from creation) - Auto-expiry
 
 ### `participants`
 - `id`: UUID - Primary Key
 - `train_id`: String (foreign key to trains.id)
 - `display_name`: String (required)
-- `username`: String (required, no @ symbol, lowercase, max 30 chars)
+- `instagram_username`: String (optional, max 30 chars)
+- `tiktok_username`: String (optional, max 50 chars)
+- `twitter_username`: String (optional, max 50 chars)
+- `linkedin_username`: String (optional, max 100 chars)
+- `youtube_username`: String (optional, max 100 chars)
+- `twitch_username`: String (optional, max 50 chars)
 - `bio`: String (optional, max 100 chars)
 - `is_host`: Boolean
+- `admin_token`: String (24-char token for host admin access)
 - `joined_at`: Timestamp
+- `avatar_url`: Text (cached avatar URL for performance)
 
 ## Deployment
 
@@ -91,18 +101,47 @@ The application uses two tables:
    - `REACT_APP_SUPABASE_ANON_KEY`
 5. Deploy!
 
+## Technical Features
+
+### ID Collision Handling
+See [ID_COLLISION_HANDLING.md](ID_COLLISION_HANDLING.md) for detailed documentation.
+
+- **Automatic retry mechanism**: Generates new IDs if collision occurs
+- **Smart error detection**: Only retries on unique constraint violations
+- **Limited attempts**: Maximum 3 retry attempts to prevent infinite loops
+- **Transparent to users**: Collisions are handled automatically without user intervention
+- **Detailed logging**: Console logs collision detection and retry attempts
+
+### Multi-Platform Support
+- Instagram, TikTok, Twitter, LinkedIn, YouTube, Twitch
+- Platform-specific username validation
+- Dual-layer avatar system (primary platform + fallback)
+
+### Admin Features
+- Host receives admin token for train management
+- Lock/unlock trains to control new joins
+- Kick participants from the train
+- Clear all participants (host only)
+
+### Security & Performance
+- Row Level Security (RLS) enabled on all tables
+- Input validation and sanitization
+- Rate limiting for join requests
+- Cached avatar URLs for better performance
+- Automatic train expiry (72 hours)
+
 ## Constraints
 
 - No user authentication
 - No social media API calls
 - No profile data fetching
 - No follower counts or verified badges
-- No train expiry
 - No analytics
-- No multi-platform support
-- Username validation: alphanumeric, dots, underscores only, max 30 chars
+- Username validation per platform requirements
 - Duplicate username check within same train
 - Train name max 50 chars
+- Bio max 100 chars
+- Train auto-expiry after 72 hours
 
 ## License
 

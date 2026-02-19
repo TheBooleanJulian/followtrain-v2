@@ -388,8 +388,6 @@ const App = () => {
       return result;
     };
 
-    const newTrainId = generateId();
-
     // Check if tables exist first
     try {
       const { error: tableError } = await supabase
@@ -410,13 +408,61 @@ const App = () => {
     // Generate admin token for host
     const newAdminToken = generateId() + generateId(); // Double ID for stronger token
     
-    // Insert train
-    const { data: trainData, error: trainError } = await supabase
-      .from('trains')
-      .insert([{ id: newTrainId, name: createFormData.trainName, locked: false }])
-      .select()
-      .single();
-
+    // Try/catch retry logic for ID collision handling
+    let newTrainId;
+    let trainData;
+    let trainError;
+    let attempts = 0;
+    const maxAttempts = 3; // Limit retries to prevent infinite loops
+    
+    while (attempts < maxAttempts) {
+      newTrainId = generateId();
+      attempts++;
+      
+      try {
+        // Insert train with the generated ID
+        const result = await supabase
+          .from('trains')
+          .insert([{ id: newTrainId, name: createFormData.trainName, locked: false }])
+          .select()
+          .single();
+        
+        trainData = result.data;
+        trainError = result.error;
+        
+        // If successful, break out of the retry loop
+        if (!trainError) {
+          break;
+        }
+        
+        // If it's not a unique constraint error, re-throw to handle normally
+        if (!trainError.message.includes('duplicate key value') && 
+            !trainError.message.includes('unique constraint')) {
+          throw trainError;
+        }
+        
+        // If we've reached max attempts, show error
+        if (attempts >= maxAttempts) {
+          throw new Error(`Failed to generate unique train ID after ${maxAttempts} attempts. Please try again.`);
+        }
+        
+        // Log collision and continue to retry
+        console.log(`Train ID collision detected for ID: ${newTrainId}, retrying... (${attempts}/${maxAttempts})`);
+        
+      } catch (error) {
+        // Handle any errors that aren't caught by the supabase error checking
+        if (attempts >= maxAttempts) {
+          console.error('Train creation failed after max retries:', error);
+          setError(`Failed to create train: ${error.message || 'Please try again.'}`);
+          setLoading(false);
+          return;
+        }
+        // For other errors during retry attempts, continue to next iteration
+        console.log(`Attempt ${attempts} failed, retrying...`);
+      }
+    }
+    
+    // Final error check after all retry attempts
     if (trainError) {
       console.error('Train creation error:', trainError);
       setError(`Failed to create train: ${trainError.message || 'Please try again.'}`);
@@ -721,7 +767,69 @@ const App = () => {
       setError('Failed to clear train');
     }
   };
-  
+  // Handle guest train ID entry
+  const handleGuestJoinTrain = async (e) => {
+    e.preventDefault();
+    const id = guestTrainId.trim().toUpperCase();
+    
+    if (!id) {
+      setError('Please enter a train ID.');
+      return;
+    }
+    
+    if (id.length !== 6) {
+      setError('Train ID must be 6 characters long.');
+      return;
+    }
+    
+    setLoading(true);
+    setError('');
+    
+    try {
+      // Check if train exists and get its details
+      const { data, error: trainError } = await supabase
+        .from('trains')
+        .select('id, name, locked, expires_at')
+        .eq('id', id)
+        .single();
+      
+      if (trainError || !data) {
+        setError('Invalid or expired Train ID.');
+        setLoading(false);
+        return;
+      }
+
+      // Check if train is locked
+      if (data.locked) {
+        setError('This train is locked. No new members can join.');
+        setLoading(false);
+        return;
+      }
+      
+      // Check if train has expired
+      if (data.expires_at) {
+        const expiryDate = new Date(data.expires_at);
+        if (expiryDate < new Date()) {
+          setError('This train has expired.');
+          setLoading(false);
+          return;
+        }
+      }
+      
+      // Train is valid, set state and navigate
+      setTrainId(id);
+      setTrainName(data.name);
+      setIsAdmin(false);
+      setCurrentView('train');
+      setGuestTrainId('');
+      setLoading(false);
+    } catch (err) {
+      console.error('Error joining train:', err);
+      setError('Failed to access train. Please try again.');
+      setLoading(false);
+    }
+  };
+
   // Export utility functions
   const [selectedPlatforms, setSelectedPlatforms] = useState({
     instagram: true,
@@ -859,6 +967,11 @@ const App = () => {
             </a>
           </p>
         </div>
+        {error && (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4 dark:bg-red-900 dark:border-red-700 dark:text-red-200">
+            {error}
+          </div>
+        )}
         <div className="space-y-4">
           <button
             onClick={() => {
@@ -870,6 +983,33 @@ const App = () => {
           >
             Create a Train
           </button>
+          
+          <div className="relative py-4">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-300 dark:border-gray-600"></div>
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-2 bg-white text-gray-500 dark:bg-gray-800 dark:text-gray-400">Or</span>
+            </div>
+          </div>
+          
+          <form onSubmit={handleGuestJoinTrain} className="space-y-2">
+            <input
+              type="text"
+              value={guestTrainId}
+              onChange={(e) => setGuestTrainId(e.target.value.toUpperCase())}
+              placeholder="Enter Train ID"
+              maxLength="6"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white text-gray-900 dark:bg-gray-700 dark:text-white dark:border-gray-600 dark:focus:ring-purple-400 text-center font-mono tracking-widest"
+            />
+            <button
+              type="submit"
+              disabled={loading || !guestTrainId.trim()}
+              className="w-full bg-gray-800 text-white px-6 py-3 rounded-lg font-medium hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed dark:bg-gray-600 dark:hover:bg-gray-500"
+            >
+              {loading ? 'Joining...' : 'Join Train'}
+            </button>
+          </form>
         </div>
       </div>
     </div>

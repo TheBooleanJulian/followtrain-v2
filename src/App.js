@@ -138,6 +138,8 @@ const App = () => {
   const [createFormData, setCreateFormData] = useState({
     trainName: '',
     displayName: '',
+    primaryPlatform: '',
+    primaryHandle: '',
     instagram: '',
     tiktok: '',
     twitter: '',
@@ -350,14 +352,22 @@ const App = () => {
       setLoading(false);
       return;
     }
-
-    if (!hasAtLeastOnePlatform(createFormData)) {
-      setError('At least one social platform username is required.');
+    
+    // Validate primary platform and handle
+    if (!createFormData.primaryPlatform || !createFormData.primaryHandle) {
+      setError('Please select a primary platform and enter a handle for avatar generation.');
       setLoading(false);
       return;
     }
-
-    // Validate each platform username
+    
+    // Validate primary handle format
+    if (!isValidUsername(createFormData.primaryHandle, createFormData.primaryPlatform)) {
+      setError(`Invalid ${createFormData.primaryPlatform} username. Please check the format requirements.`);
+      setLoading(false);
+      return;
+    }
+    
+    // Validate additional platforms
     const platforms = ['instagram', 'tiktok', 'twitter', 'linkedin', 'youtube', 'twitch'];
     for (const platform of platforms) {
       if (createFormData[platform] && !isValidUsername(createFormData[platform], platform)) {
@@ -413,6 +423,13 @@ const App = () => {
       return;
     }
 
+    // Generate avatar URL for host
+    const hostAvatarUrl = await generateAvatarUrl(
+      createFormData.primaryPlatform,
+      createFormData.primaryHandle,
+      createFormData.displayName
+    );
+
     // Insert host participant
     const participantData = {
       train_id: newTrainId,
@@ -425,7 +442,8 @@ const App = () => {
       twitch_username: createFormData.twitch ? createFormData.twitch.replace(/^@/, '').toLowerCase() : null,
       bio: createFormData.bio,
       is_host: true,
-      admin_token: newAdminToken
+      admin_token: newAdminToken,
+      avatar_url: hostAvatarUrl
     };
 
     console.log('Inserting participant data:', participantData);
@@ -447,9 +465,51 @@ const App = () => {
     setIsAdmin(true); // Set as admin since they created the train
     setAdminToken(newAdminToken); // Store admin token
     setCurrentView('train');
+    
+    // Reset form
+    setCreateFormData({
+      trainName: '',
+      displayName: '',
+      primaryPlatform: '',
+      primaryHandle: '',
+      instagram: '',
+      tiktok: '',
+      twitter: '',
+      linkedin: '',
+      youtube: '',
+      twitch: '',
+      bio: ''
+    });
+    
     setLoading(false);
   };
 
+  // Function to generate avatar URL with fallback
+  const generateAvatarUrl = async (primaryPlatform, primaryHandle, displayName) => {
+    // If no primary platform is selected, use display name only
+    if (!primaryPlatform || !primaryHandle) {
+      return `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&size=48&background=random`;
+    }
+    
+    // Try to fetch avatar from the primary platform
+    const platformUrls = {
+      instagram: `https://unavatar.io/instagram/${primaryHandle.replace(/^@/, '')}`,
+      twitter: `https://unavatar.io/twitter/${primaryHandle.replace(/^@/, '')}`,
+      youtube: `https://unavatar.io/youtube/${primaryHandle.replace(/^@/, '')}`,
+      twitch: `https://unavatar.io/twitch/${primaryHandle.replace(/^@/, '')}`,
+      tiktok: `https://unavatar.io/tiktok/${primaryHandle.replace(/^@/, '')}`,
+      linkedin: `https://unavatar.io/linkedin/${primaryHandle.replace(/^@/, '')}`
+    };
+    
+    // Return the primary platform avatar URL
+    if (platformUrls[primaryPlatform]) {
+      return platformUrls[primaryPlatform];
+    }
+    
+    // Fallback to ui-avatars if platform is not supported
+    return `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&size=48&background=random`;
+  };
+  
   // Join an existing train
   const handleJoinTrain = async (e) => {
     e.preventDefault();
@@ -473,14 +533,22 @@ const App = () => {
       setLoading(false);
       return;
     }
-
-    if (!hasAtLeastOnePlatform(joinFormData)) {
-      setError('At least one social platform username is required.');
+    
+    // Validate primary platform and handle
+    if (!joinFormData.primaryPlatform || !joinFormData.primaryHandle) {
+      setError('Please select a primary platform and enter a handle for avatar generation.');
       setLoading(false);
       return;
     }
-
-    // Validate each platform username
+    
+    // Validate primary handle format
+    if (!isValidUsername(joinFormData.primaryHandle, joinFormData.primaryPlatform)) {
+      setError(`Invalid ${joinFormData.primaryPlatform} username. Please check the format requirements.`);
+      setLoading(false);
+      return;
+    }
+    
+    // Validate additional platforms
     const platforms = ['instagram', 'tiktok', 'twitter', 'linkedin', 'youtube', 'twitch'];
     for (const platform of platforms) {
       if (joinFormData[platform] && !isValidUsername(joinFormData[platform], platform)) {
@@ -527,6 +595,13 @@ const App = () => {
         }
       }
     }
+    
+    // Generate avatar URL
+    const avatarUrl = await generateAvatarUrl(
+      joinFormData.primaryPlatform,
+      joinFormData.primaryHandle,
+      joinFormData.displayName
+    );
 
     // Insert participant
     const joinParticipantData = {
@@ -539,7 +614,8 @@ const App = () => {
       youtube_username: joinFormData.youtube ? joinFormData.youtube.replace(/^@/, '').toLowerCase() : null,
       twitch_username: joinFormData.twitch ? joinFormData.twitch.replace(/^@/, '').toLowerCase() : null,
       bio: joinFormData.bio,
-      is_host: false
+      is_host: false,
+      avatar_url: avatarUrl
     };
 
     console.log('Joining participant data:', joinParticipantData);
@@ -557,7 +633,18 @@ const App = () => {
 
     // Close modal and reset form
     setShowJoinModal(false);
-    setJoinFormData({ displayName: '', username: '', bio: '' });
+    setJoinFormData({ 
+      displayName: '', 
+      primaryPlatform: '', 
+      primaryHandle: '', 
+      instagram: '',
+      tiktok: '',
+      twitter: '',
+      linkedin: '',
+      youtube: '',
+      twitch: '',
+      bio: '' 
+    });
     setLoading(false);
   };
 
@@ -743,7 +830,7 @@ const App = () => {
     <div className="min-h-screen bg-gradient-to-br from-purple-500 via-pink-500 to-red-500 flex flex-col items-center justify-center p-4 dark:from-gray-800 dark:to-gray-900">
       <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full text-center relative dark:bg-gray-800 dark:text-white">
         <div className="flex justify-center mb-6 relative">
-          <Sparkles className="h-12 w-12 text-purple-500 dark:text-purple-400" />
+          <img src="/followtrain-icon.png" alt="FollowTrain Icon" className="h-24 w-24 object-contain" />
           <button
             onClick={toggleDarkMode}
             className="absolute top-0 right-0 bg-gray-200 text-gray-800 px-3 py-1 rounded-lg text-sm font-medium hover:bg-gray-300 transition-colors dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600"
@@ -753,8 +840,9 @@ const App = () => {
             {darkMode ? " Light" : " Dark"}
           </button>
         </div>
-        <h1 className="text-3xl font-bold text-gray-800 mb-2 dark:text-white">FollowTrain</h1>
-        <p className="text-gray-600 mb-8 dark:text-gray-300">A lightweight app to share and follow each other on Instagram</p>
+        <h1 className="text-4xl font-bold text-gray-800 mb-2 dark:text-white">FollowTrain</h1>
+        <p className="text-gray-600 mb-1 dark:text-gray-300">Share and follow each other on all social media platforms</p>
+        <p className="text-gray-500 text-sm mb-8 dark:text-gray-400">No login required. Fast, easy, and fun!</p>
         
         {/* Footer */}
         <div className="mt-8 pt-6 border-t border-gray-200 text-center text-sm text-gray-600 dark:text-gray-400">
@@ -770,7 +858,6 @@ const App = () => {
             </a>
           </p>
         </div>
-        <p className="text-gray-600 mb-8 dark:text-gray-300">A lightweight app to share and follow each other on Instagram</p>
         <div className="space-y-4">
           <button
             onClick={() => {
@@ -842,8 +929,44 @@ const App = () => {
           </div>
           
           <div className="mb-6">
+            <label className="block text-gray-700 text-sm font-medium mb-2">
+              Primary Platform (for Avatar) *
+            </label>
+            
+            <div className="flex gap-3 mb-3">
+              <select
+                value={createFormData.primaryPlatform}
+                onChange={(e) => setCreateFormData({...createFormData, primaryPlatform: e.target.value})}
+                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white dark:border-gray-600"
+                required
+              >
+                <option value="">Select Platform</option>
+                <option value="instagram">Instagram</option>
+                <option value="tiktok">TikTok</option>
+                <option value="twitter">Twitter</option>
+                <option value="youtube">YouTube</option>
+                <option value="twitch">Twitch</option>
+                <option value="linkedin">LinkedIn</option>
+              </select>
+              
+              <input
+                type="text"
+                value={createFormData.primaryHandle}
+                onChange={(e) => setCreateFormData({...createFormData, primaryHandle: e.target.value})}
+                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white dark:border-gray-600"
+                placeholder="@username"
+                required
+              />
+            </div>
+            
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+              This will be used to generate your avatar
+            </p>
+          </div>
+          
+          <div className="mb-6">
             <label className="block text-gray-700 text-sm font-medium mb-3">
-              Social Media Platforms (at least one required)
+              Optional Additional Links
             </label>
             
             <div className="space-y-4">
@@ -1078,12 +1201,12 @@ const App = () => {
                   <div className="p-4">
                     <div className="flex items-center mb-3">
                       <img
-                        src={`https://ui-avatars.com/api/?name=${encodeURIComponent(participant.display_name)}&size=48&background=random`}
+                        src={participant.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(participant.display_name)}&size=48&background=random`}
                         alt={participant.display_name}
                         className="w-12 h-12 rounded-full mr-3"
                         onError={(e) => {
-                          // Fallback to a default avatar if the service fails
-                          e.target.src = `https://ui-avatars.com/api/?name=Unknown&size=48&background=cccccc&color=ffffff`;
+                          // Fallback to a default avatar if the stored avatar fails
+                          e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(participant.display_name)}&size=48&background=cccccc&color=ffffff`;
                         }}
                       />
                       <div className="flex-1 min-w-0">
@@ -1359,7 +1482,7 @@ const App = () => {
           )}
           
           <form onSubmit={handleJoinTrain}>
-            <div className="mb-4">
+            <div className="mb-6">
               <label className="block text-gray-700 text-sm font-medium mb-2" htmlFor="joinDisplayName">
                 Display Name *
               </label>
@@ -1375,8 +1498,44 @@ const App = () => {
             </div>
             
             <div className="mb-6">
+              <label className="block text-gray-700 text-sm font-medium mb-2">
+                Primary Platform (for Avatar) *
+              </label>
+              
+              <div className="flex gap-3 mb-3">
+                <select
+                  value={joinFormData.primaryPlatform}
+                  onChange={(e) => setJoinFormData({...joinFormData, primaryPlatform: e.target.value})}
+                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white dark:border-gray-600"
+                  required
+                >
+                  <option value="">Select Platform</option>
+                  <option value="instagram">Instagram</option>
+                  <option value="tiktok">TikTok</option>
+                  <option value="twitter">Twitter</option>
+                  <option value="youtube">YouTube</option>
+                  <option value="twitch">Twitch</option>
+                  <option value="linkedin">LinkedIn</option>
+                </select>
+                
+                <input
+                  type="text"
+                  value={joinFormData.primaryHandle}
+                  onChange={(e) => setJoinFormData({...joinFormData, primaryHandle: e.target.value})}
+                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white dark:border-gray-600"
+                  placeholder="@username"
+                  required
+                />
+              </div>
+              
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                This will be used to generate your avatar
+              </p>
+            </div>
+            
+            <div className="mb-6">
               <label className="block text-gray-700 text-sm font-medium mb-3">
-                Social Media Platforms (at least one required)
+                Optional Additional Links
               </label>
               
               <div className="space-y-4">
@@ -1512,7 +1671,7 @@ const App = () => {
     <div className="min-h-screen bg-gradient-to-br from-purple-500 via-pink-500 to-red-500 flex flex-col items-center justify-center p-4 dark:from-gray-800 dark:to-gray-900">
       <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full text-center relative dark:bg-gray-800 dark:text-white">
         <div className="flex justify-center mb-6 relative">
-          <Sparkles className="h-12 w-12 text-purple-500 dark:text-purple-400" />
+          <img src="/followtrain-icon.png" alt="FollowTrain Icon" className="h-24 w-24 object-contain" />
           <button
             onClick={toggleDarkMode}
             className="absolute top-0 right-0 bg-gray-200 text-gray-800 px-3 py-1 rounded-lg text-sm font-medium hover:bg-gray-300 transition-colors dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600"
@@ -1577,3 +1736,8 @@ const App = () => {
 };
 
 export default App;
+
+
+
+
+

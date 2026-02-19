@@ -23,7 +23,8 @@ CREATE TABLE participants (
   bio VARCHAR(100),
   is_host BOOLEAN DEFAULT FALSE,
   admin_token VARCHAR(24), -- For host admin access
-  joined_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+  joined_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  avatar_url TEXT -- Stored avatar URL for performance
 );
 
 -- Enable Row Level Security (RLS) for both tables

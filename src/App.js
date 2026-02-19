@@ -112,7 +112,8 @@ const App = () => {
   
   const [currentView, setCurrentView] = useState('home');
   const [trainId, setTrainId] = useState('');
-  const [trainName, setTrainName] = useState('');
+  const [trainName, setTrainName] = useState();
+  const [newTrainName, setNewTrainName] = useState(''); // For renaming functionality
   const [isAdmin, setIsAdmin] = useState(false); // Track if current user is the host/admin
   const [adminToken, setAdminToken] = useState(''); // Store admin token
   const [trainLocked, setTrainLocked] = useState(false); // Track if train is locked
@@ -966,6 +967,41 @@ const App = () => {
       setError('Failed to clear train');
     }
   };
+
+  // Rename train function
+  const renameTrain = async () => {
+    if (!newTrainName.trim()) {
+      setError('Please enter a new train name');
+      return;
+    }
+    
+    if (newTrainName.trim().length > 50) {
+      setError('Train name must be 50 characters or less');
+      return;
+    }
+    
+    try {
+      const { error } = await supabase
+        .from('trains')
+        .update({ name: newTrainName.trim() })
+        .eq('id', trainId);
+      
+      if (error) {
+        console.error('Error renaming train:', error);
+        setError(`Failed to rename train: ${error.message}`);
+        return;
+      }
+      
+      setTrainName(newTrainName.trim());
+      setNewTrainName('');
+      setError('');
+      console.log('Train renamed successfully to:', newTrainName.trim());
+    } catch (err) {
+      console.error('Error renaming train:', err);
+      setError('Failed to rename train');
+    }
+  };
+
   // Handle guest train ID entry
   const handleGuestJoinTrain = async (e) => {
     e.preventDefault();
@@ -1774,6 +1810,29 @@ const App = () => {
                 </div>
                 <p className="text-sm text-gray-600 mt-2 dark:text-gray-300">
                   Status: {trainLocked ? '🔒 Locked (no new joins)' : '🔓 Unlocked (open for joins)'}
+                </p>
+              </div>
+              
+              <div className="bg-white p-4 rounded-lg shadow dark:bg-gray-700">
+                <h4 className="font-medium text-gray-800 mb-2 dark:text-white">Rename Train</h4>
+                <div className="flex gap-2 mb-2">
+                  <input
+                    type="text"
+                    value={newTrainName}
+                    onChange={(e) => setNewTrainName(e.target.value)}
+                    placeholder="New train name"
+                    maxLength="50"
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white dark:border-gray-600"
+                  />
+                  <button
+                    onClick={renameTrain}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
+                  >
+                    Rename
+                  </button>
+                </div>
+                <p className="text-sm text-gray-600 dark:text-gray-300">
+                  Current: {trainName || 'Unnamed Train'}
                 </p>
               </div>
               

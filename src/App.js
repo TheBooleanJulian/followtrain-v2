@@ -303,8 +303,8 @@ const App = () => {
         // LinkedIn URL validation
         return isValidUrl(username, 'linkedin');
       case 'youtube':
-        // YouTube: alphanumeric, max 100 chars
-        return /^[a-zA-Z0-9]{1,100}$/.test(cleanUsername);
+        // YouTube: allow letters, numbers, spaces, dashes, underscores, max 100 chars
+        return /^[a-zA-Z0-9 _-]{1,100}$/.test(cleanUsername);
       case 'twitch':
         // Twitch: alphanumeric, underscores, max 50 chars
         return /^[a-zA-Z0-9_]{1,50}$/.test(cleanUsername);
@@ -1164,21 +1164,6 @@ const App = () => {
         <h1 className="text-4xl font-bold text-gray-800 mb-2 dark:text-white">FollowTrain</h1>
         <p className="text-gray-600 mb-1 dark:text-gray-300">Share and follow each other on all social media platforms</p>
         <p className="text-gray-500 text-sm mb-8 dark:text-gray-400">No login required. Fast, easy, and fun!</p>
-        
-        {/* Footer */}
-        <div className="mt-8 pt-6 border-t border-gray-200 text-center text-sm text-gray-600 dark:text-gray-400">
-          <p>
-            Created by{' '}
-            <a 
-              href="https://github.com/TheBooleanJulian" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="text-purple-600 hover:underline dark:text-purple-400"
-            >
-              TheBooleanJulian
-            </a>
-          </p>
-        </div>
         {error && (
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4 dark:bg-red-900 dark:border-red-700 dark:text-red-200">
             {error}
@@ -1195,6 +1180,21 @@ const App = () => {
           >
             Create a Train
           </button>
+          
+          {/* Footer */}
+          <div className="mt-8 pt-6 border-t border-gray-200 text-center text-sm text-gray-600 dark:text-gray-400">
+            <p>
+              Created by{' '}
+              <a 
+                href="https://github.com/TheBooleanJulian" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-purple-600 hover:underline dark:text-purple-400"
+              >
+                TheBooleanJulian
+              </a>
+            </p>
+          </div>
           
           <div className="relative py-4">
             <div className="absolute inset-0 flex items-center">
@@ -1680,8 +1680,8 @@ const App = () => {
                           <button
                             onClick={(e) => {
                               e.preventDefault();
-                              // For LinkedIn URLs, use the stored URL directly
-                              handleLinkClick(participant.linkedin_username);
+                              // For LinkedIn URLs, open directly in new tab
+                              window.open(participant.linkedin_username, '_blank');
                             }}
                             className="text-purple-600 truncate hover:underline cursor-pointer bg-transparent border-none p-0 font-inherit text-left dark:text-purple-400"
                           >
@@ -2132,6 +2132,21 @@ const App = () => {
           >
             ← Back to Home
           </button>
+        </div>
+        
+        {/* Footer */}
+        <div className="mt-8 pt-6 border-t border-gray-200 text-center text-sm text-gray-600 dark:text-gray-400">
+          <p>
+            Created by{' '}
+            <a 
+              href="https://github.com/TheBooleanJulian" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-purple-600 hover:underline dark:text-purple-400"
+            >
+              TheBooleanJulian
+            </a>
+          </p>
         </div>
       </div>
     </div>

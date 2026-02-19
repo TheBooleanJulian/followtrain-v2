@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Moon, Sun } from 'lucide-react';
-import { Copy, Plus, Sparkles, QrCode } from 'lucide-react';
+import { Copy, Plus, QrCode } from 'lucide-react';
 import { supabase } from './supabaseClient';
 import QRCode from 'react-qr-code';
 
@@ -308,11 +308,6 @@ const App = () => {
     }
   };
 
-  // Check if at least one platform is provided
-  const hasAtLeastOnePlatform = (formData) => {
-    return formData.instagram || formData.tiktok || formData.twitter || 
-           formData.linkedin || formData.youtube || formData.twitch;
-  };
 
   // Test database connection
   const testDatabaseConnection = async () => {

@@ -122,6 +122,17 @@ const App = () => {
   const [participants, setParticipants] = useState([]);
   const [showJoinModal, setShowJoinModal] = useState(false);
   const [showQRModal, setShowQRModal] = useState(false);
+  const [editingParticipantId, setEditingParticipantId] = useState(null); // Track which participant is being edited
+  const [editFormData, setEditFormData] = useState({
+    displayName: '',
+    instagram: '',
+    tiktok: '',
+    twitter: '',
+    linkedin: '',
+    youtube: '',
+    twitch: '',
+    bio: ''
+  });
   
   // Rate limiting state
   const [lastJoinRequest, setLastJoinRequest] = useState(0);
@@ -1050,6 +1061,129 @@ const App = () => {
     }
   };
 
+  // Start editing a participant
+  const startEditing = (participant) => {
+    setEditingParticipantId(participant.id);
+    setEditFormData({
+      displayName: participant.display_name || '',
+      instagram: participant.instagram_username || '',
+      tiktok: participant.tiktok_username || '',
+      twitter: participant.twitter_username || '',
+      linkedin: participant.linkedin_username || '',
+      youtube: participant.youtube_username || '',
+      twitch: participant.twitch_username || '',
+      bio: participant.bio || ''
+    });
+  };
+
+  // Cancel editing
+  const cancelEditing = () => {
+    setEditingParticipantId(null);
+    setEditFormData({
+      displayName: '',
+      instagram: '',
+      tiktok: '',
+      twitter: '',
+      linkedin: '',
+      youtube: '',
+      twitch: '',
+      bio: ''
+    });
+  };
+
+  // Save edited participant
+  const saveEdit = async (participantId) => {
+    // Sanitize edit form data
+    const sanitizedEditData = sanitizeFormData(editFormData);
+    
+    // Validate inputs
+    if (!sanitizedEditData.displayName.trim()) {
+      setError('Display name is required.');
+      return;
+    }
+    
+    // Validate additional platforms
+    const platforms = ['instagram', 'tiktok', 'twitter', 'linkedin', 'youtube', 'twitch'];
+    for (const platform of platforms) {
+      if (sanitizedEditData[platform]) {
+        if (platform === 'linkedin') {
+          // Special validation for LinkedIn URLs
+          if (!isValidUrl(sanitizedEditData[platform], 'linkedin')) {
+            setError('Please enter a valid LinkedIn profile URL (e.g., https://linkedin.com/in/your-profile)');
+            return;
+          }
+        } else {
+          // Regular username validation for other platforms
+          if (!isValidUsername(sanitizedEditData[platform], platform)) {
+            setError(`Invalid ${platform} username. Please check the format requirements.`);
+            return;
+          }
+        }
+      }
+    }
+    
+    try {
+      // Sanitize LinkedIn URL if provided
+      const sanitizedLinkedin = sanitizedEditData.linkedin ? sanitizeUrl(sanitizedEditData.linkedin) : null;
+      
+      const updateData = {
+        display_name: sanitizedEditData.displayName,
+        instagram_username: sanitizedEditData.instagram ? sanitizedEditData.instagram.replace(/^@/, '').toLowerCase() : null,
+        tiktok_username: sanitizedEditData.tiktok ? sanitizedEditData.tiktok.replace(/^@/, '').toLowerCase() : null,
+        twitter_username: sanitizedEditData.twitter ? sanitizedEditData.twitter.replace(/^@/, '').toLowerCase() : null,
+        linkedin_username: sanitizedLinkedin,
+        youtube_username: sanitizedEditData.youtube ? sanitizedEditData.youtube.replace(/^@/, '').toLowerCase() : null,
+        twitch_username: sanitizedEditData.twitch ? sanitizedEditData.twitch.replace(/^@/, '').toLowerCase() : null,
+        bio: sanitizedEditData.bio
+      };
+      
+      const { error } = await supabase
+        .from('participants')
+        .update(updateData)
+        .eq('id', participantId);
+      
+      if (error) {
+        console.error('Error updating participant:', error);
+        setError(`Failed to update entry: ${error.message}`);
+        return;
+      }
+      
+      // Update local state
+      setParticipants(prev => prev.map(p => 
+        p.id === participantId 
+          ? { 
+              ...p, 
+              display_name: sanitizedEditData.displayName,
+              instagram_username: sanitizedEditData.instagram ? sanitizedEditData.instagram.replace(/^@/, '').toLowerCase() : null,
+              tiktok_username: sanitizedEditData.tiktok ? sanitizedEditData.tiktok.replace(/^@/, '').toLowerCase() : null,
+              twitter_username: sanitizedEditData.twitter ? sanitizedEditData.twitter.replace(/^@/, '').toLowerCase() : null,
+              linkedin_username: sanitizedLinkedin,
+              youtube_username: sanitizedEditData.youtube ? sanitizedEditData.youtube.replace(/^@/, '').toLowerCase() : null,
+              twitch_username: sanitizedEditData.twitch ? sanitizedEditData.twitch.replace(/^@/, '').toLowerCase() : null,
+              bio: sanitizedEditData.bio
+            }
+          : p
+      ));
+      
+      setEditingParticipantId(null);
+      setEditFormData({
+        displayName: '',
+        instagram: '',
+        tiktok: '',
+        twitter: '',
+        linkedin: '',
+        youtube: '',
+        twitch: '',
+        bio: ''
+      });
+      setError('');
+      console.log('Participant updated successfully');
+    } catch (err) {
+      console.error('Error saving edit:', err);
+      setError('Failed to update entry');
+    }
+  };
+
   // Handle guest train ID entry
   const handleGuestJoinTrain = async (e) => {
     e.preventDefault();
@@ -1711,103 +1845,230 @@ const App = () => {
                           </span>
                         )}
                       </div>
+                      {/* Edit button for own entries or admin */}
+                      {(participant.id === editingParticipantId || (!isAdmin && participant.admin_token === adminToken)) && (
+                        <button
+                          onClick={() => editingParticipantId === participant.id ? cancelEditing() : startEditing(participant)}
+                          className={`text-xs px-2 py-1 rounded ${editingParticipantId === participant.id ? 'bg-gray-200 text-gray-700 hover:bg-gray-300' : 'bg-blue-100 text-blue-700 hover:bg-blue-200'} transition-colors dark:bg-opacity-20`}
+                        >
+                          {editingParticipantId === participant.id ? 'Cancel' : 'Edit'}
+                        </button>
+                      )}
                     </div>
                     
                     {/* Platform usernames */}
-                    <div className="space-y-1 mb-3">
-                      {participant.instagram_username && (
-                        <div className="flex items-center text-sm dark:text-gray-300">
-                          <span className="font-medium text-gray-700 w-20 dark:text-gray-400">Instagram:</span>
+                    {editingParticipantId === participant.id ? (
+                      // Edit form
+                      <div className="space-y-3 mb-3">
+                        <div>
+                          <label className="block text-xs font-medium text-gray-700 mb-1 dark:text-gray-300">Display Name *</label>
+                          <input
+                            type="text"
+                            value={editFormData.displayName}
+                            onChange={(e) => setEditFormData({...editFormData, displayName: e.target.value})}
+                            className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 dark:bg-gray-600 dark:text-white dark:border-gray-500"
+                            required
+                          />
+                        </div>
+                        
+                        <div>
+                          <label className="block text-xs font-medium text-gray-700 mb-1 dark:text-gray-300">Instagram</label>
+                          <input
+                            type="text"
+                            value={editFormData.instagram}
+                            onChange={(e) => setEditFormData({...editFormData, instagram: e.target.value})}
+                            placeholder="@username"
+                            className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 dark:bg-gray-600 dark:text-white dark:border-gray-500"
+                          />
+                        </div>
+                        
+                        <div>
+                          <label className="block text-xs font-medium text-gray-700 mb-1 dark:text-gray-300">TikTok</label>
+                          <input
+                            type="text"
+                            value={editFormData.tiktok}
+                            onChange={(e) => setEditFormData({...editFormData, tiktok: e.target.value})}
+                            placeholder="@username"
+                            className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 dark:bg-gray-600 dark:text-white dark:border-gray-500"
+                          />
+                        </div>
+                        
+                        <div>
+                          <label className="block text-xs font-medium text-gray-700 mb-1 dark:text-gray-300">Twitter</label>
+                          <input
+                            type="text"
+                            value={editFormData.twitter}
+                            onChange={(e) => setEditFormData({...editFormData, twitter: e.target.value})}
+                            placeholder="@username"
+                            className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 dark:bg-gray-600 dark:text-white dark:border-gray-500"
+                          />
+                        </div>
+                        
+                        <div>
+                          <label className="block text-xs font-medium text-gray-700 mb-1 dark:text-gray-300">LinkedIn</label>
+                          <input
+                            type="text"
+                            value={editFormData.linkedin}
+                            onChange={(e) => setEditFormData({...editFormData, linkedin: e.target.value})}
+                            placeholder="https://linkedin.com/in/your-profile"
+                            className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 dark:bg-gray-600 dark:text-white dark:border-gray-500"
+                          />
+                        </div>
+                        
+                        <div>
+                          <label className="block text-xs font-medium text-gray-700 mb-1 dark:text-gray-300">YouTube</label>
+                          <input
+                            type="text"
+                            value={editFormData.youtube}
+                            onChange={(e) => setEditFormData({...editFormData, youtube: e.target.value})}
+                            placeholder="channel name"
+                            className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 dark:bg-gray-600 dark:text-white dark:border-gray-500"
+                          />
+                        </div>
+                        
+                        <div>
+                          <label className="block text-xs font-medium text-gray-700 mb-1 dark:text-gray-300">Twitch</label>
+                          <input
+                            type="text"
+                            value={editFormData.twitch}
+                            onChange={(e) => setEditFormData({...editFormData, twitch: e.target.value})}
+                            placeholder="@username"
+                            className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 dark:bg-gray-600 dark:text-white dark:border-gray-500"
+                          />
+                        </div>
+                        
+                        <div>
+                          <label className="block text-xs font-medium text-gray-700 mb-1 dark:text-gray-300">Bio</label>
+                          <textarea
+                            value={editFormData.bio}
+                            onChange={(e) => setEditFormData({...editFormData, bio: e.target.value})}
+                            placeholder="Tell us about yourself..."
+                            rows="2"
+                            maxLength="100"
+                            className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 dark:bg-gray-600 dark:text-white dark:border-gray-500"
+                          />
+                        </div>
+                        
+                        <div className="flex gap-2 pt-2">
                           <button
-                            onClick={(e) => {
-                              e.preventDefault();
-                              const smartLink = createSmartLink('instagram', participant.instagram_username);
-                              handleLinkClick(smartLink);
-                            }}
-                            className="text-purple-600 truncate hover:underline cursor-pointer bg-transparent border-none p-0 font-inherit text-left"
+                            onClick={() => saveEdit(participant.id)}
+                            className="flex-1 bg-blue-600 text-white text-sm py-1 rounded hover:bg-blue-700 transition-colors"
                           >
-                            @{participant.instagram_username}
+                            Save
+                          </button>
+                          <button
+                            onClick={cancelEditing}
+                            className="flex-1 bg-gray-200 text-gray-700 text-sm py-1 rounded hover:bg-gray-300 transition-colors dark:bg-gray-600 dark:text-gray-200"
+                          >
+                            Cancel
                           </button>
                         </div>
-                      )}
-                      {participant.tiktok_username && (
-                        <div className="flex items-center text-sm dark:text-gray-300">
-                          <span className="font-medium text-gray-700 w-20 dark:text-gray-400">TikTok:</span>
-                          <button
-                            onClick={(e) => {
-                              e.preventDefault();
-                              const smartLink = createSmartLink('tiktok', participant.tiktok_username);
-                              handleLinkClick(smartLink);
-                            }}
-                            className="text-purple-600 truncate hover:underline cursor-pointer bg-transparent border-none p-0 font-inherit text-left dark:text-purple-400"
-                          >
-                            @{participant.tiktok_username}
-                          </button>
-                        </div>
-                      )}
-                      {participant.twitter_username && (
-                        <div className="flex items-center text-sm dark:text-gray-300">
-                          <span className="font-medium text-gray-700 w-20 dark:text-gray-400">Twitter:</span>
-                          <button
-                            onClick={(e) => {
-                              e.preventDefault();
-                              const smartLink = createSmartLink('twitter', participant.twitter_username);
-                              handleLinkClick(smartLink);
-                            }}
-                            className="text-purple-600 truncate hover:underline cursor-pointer bg-transparent border-none p-0 font-inherit text-left dark:text-purple-400"
-                          >
-                            @{participant.twitter_username}
-                          </button>
-                        </div>
-                      )}
-                      {participant.linkedin_username && (
-                        <div className="flex items-center text-sm dark:text-gray-300">
-                          <span className="font-medium text-gray-700 w-20 dark:text-gray-400">LinkedIn:</span>
-                          <button
-                            onClick={(e) => {
-                              e.preventDefault();
-                              // For LinkedIn URLs, open directly in new tab
-                              window.open(participant.linkedin_username, '_blank');
-                            }}
-                            className="text-purple-600 truncate hover:underline cursor-pointer bg-transparent border-none p-0 font-inherit text-left dark:text-purple-400"
-                          >
-                            {participant.linkedin_username.replace('https://', '').replace('www.', '').split('/')[2] || 'Profile'}
-                          </button>
-                        </div>
-                      )}
-                      {participant.youtube_username && (
-                        <div className="flex items-center text-sm dark:text-gray-300">
-                          <span className="font-medium text-gray-700 w-20 dark:text-gray-400">YouTube:</span>
-                          <button
-                            onClick={(e) => {
-                              e.preventDefault();
-                              const smartLink = createSmartLink('youtube', participant.youtube_username);
-                              handleLinkClick(smartLink);
-                            }}
-                            className="text-purple-600 truncate hover:underline cursor-pointer bg-transparent border-none p-0 font-inherit text-left dark:text-purple-400"
-                          >
-                            @{participant.youtube_username}
-                          </button>
-                        </div>
-                      )}
-                      {participant.twitch_username && (
-                        <div className="flex items-center text-sm dark:text-gray-300">
-                          <span className="font-medium text-gray-700 w-20 dark:text-gray-400">Twitch:</span>
-                          <button
-                            onClick={(e) => {
-                              e.preventDefault();
-                              const smartLink = createSmartLink('twitch', participant.twitch_username);
-                              handleLinkClick(smartLink);
-                            }}
-                            className="text-purple-600 truncate hover:underline cursor-pointer bg-transparent border-none p-0 font-inherit text-left dark:text-purple-400"
-                          >
-                            @{participant.twitch_username}
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                    {participant.bio && (
-                      <p className="text-gray-600 text-sm dark:text-gray-300">{participant.bio}</p>
+                      </div>
+                    ) : (
+                      // Display mode
+                      <div className="space-y-1 mb-3">
+                        {participant.instagram_username && (
+                          <div className="flex items-center text-sm dark:text-gray-300">
+                            <span className="font-medium text-gray-700 w-20 dark:text-gray-400">Instagram:</span>
+                            <button
+                              onClick={(e) => {
+                                e.preventDefault();
+                                const smartLink = createSmartLink('instagram', participant.instagram_username);
+                                handleLinkClick(smartLink);
+                              }}
+                              className="text-purple-600 truncate hover:underline cursor-pointer bg-transparent border-none p-0 font-inherit text-left"
+                            >
+                              @{participant.instagram_username}
+                            </button>
+                          </div>
+                        )}
+                        {participant.tiktok_username && (
+                          <div className="flex items-center text-sm dark:text-gray-300">
+                            <span className="font-medium text-gray-700 w-20 dark:text-gray-400">TikTok:</span>
+                            <button
+                              onClick={(e) => {
+                                e.preventDefault();
+                                const smartLink = createSmartLink('tiktok', participant.tiktok_username);
+                                handleLinkClick(smartLink);
+                              }}
+                              className="text-purple-600 truncate hover:underline cursor-pointer bg-transparent border-none p-0 font-inherit text-left dark:text-purple-400"
+                            >
+                              @{participant.tiktok_username}
+                            </button>
+                          </div>
+                        )}
+                        {participant.twitter_username && (
+                          <div className="flex items-center text-sm dark:text-gray-300">
+                            <span className="font-medium text-gray-700 w-20 dark:text-gray-400">Twitter:</span>
+                            <button
+                              onClick={(e) => {
+                                e.preventDefault();
+                                const smartLink = createSmartLink('twitter', participant.twitter_username);
+                                handleLinkClick(smartLink);
+                              }}
+                              className="text-purple-600 truncate hover:underline cursor-pointer bg-transparent border-none p-0 font-inherit text-left dark:text-purple-400"
+                            >
+                              @{participant.twitter_username}
+                            </button>
+                          </div>
+                        )}
+                        {participant.linkedin_username && (
+                          <div className="flex items-center text-sm dark:text-gray-300">
+                            <span className="font-medium text-gray-700 w-20 dark:text-gray-400">LinkedIn:</span>
+                            <button
+                              onClick={(e) => {
+                                e.preventDefault();
+                                // For LinkedIn URLs, open directly in new tab
+                                window.open(participant.linkedin_username, '_blank');
+                              }}
+                              className="text-purple-600 truncate hover:underline cursor-pointer bg-transparent border-none p-0 font-inherit text-left dark:text-purple-400"
+                            >
+                              {participant.linkedin_username.replace('https://', '').replace('www.', '').split('/')[2] || 'Profile'}
+                            </button>
+                          </div>
+                        )}
+                        {participant.youtube_username && (
+                          <div className="flex items-center text-sm dark:text-gray-300">
+                            <span className="font-medium text-gray-700 w-20 dark:text-gray-400">YouTube:</span>
+                            <button
+                              onClick={(e) => {
+                                e.preventDefault();
+                                const smartLink = createSmartLink('youtube', participant.youtube_username);
+                                handleLinkClick(smartLink);
+                              }}
+                              className="text-purple-600 truncate hover:underline cursor-pointer bg-transparent border-none p-0 font-inherit text-left dark:text-purple-400"
+                            >
+                              @{participant.youtube_username}
+                            </button>
+                          </div>
+                        )}
+                        {participant.twitch_username && (
+                          <div className="flex items-center text-sm dark:text-gray-300">
+                            <span className="font-medium text-gray-700 w-20 dark:text-gray-400">Twitch:</span>
+                            <button
+                              onClick={(e) => {
+                                e.preventDefault();
+                                const smartLink = createSmartLink('twitch', participant.twitch_username);
+                                handleLinkClick(smartLink);
+                              }}
+                              className="text-purple-600 truncate hover:underline cursor-pointer bg-transparent border-none p-0 font-inherit text-left dark:text-purple-400"
+                            >
+                              @{participant.twitch_username}
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    {editingParticipantId === participant.id ? (
+                      // Edit form is already shown above
+                      <div className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                        {editFormData.bio.length}/100 characters
+                      </div>
+                    ) : (
+                      // Display mode
+                      participant.bio && (
+                        <p className="text-gray-600 text-sm dark:text-gray-300">{participant.bio}</p>
+                      )
                     )}
                   </div>
                 </div>

@@ -12,6 +12,8 @@
 - **Dark Mode Improvements**: Enhanced UI contrast and visibility
 - **Smart Autocomplete**: Visual username suggestions with avatar previews for disambiguation
 - **Security Enhancement**: Comprehensive input sanitization to prevent prompt injection attacks
+- **User Edit Functionality**: Participants can edit their own entries with full form validation
+- **Train Rename Feature**: Hosts can rename trains through admin panel
 
 ### Changed
 - **Database Structure**: Extended participants table with multiple platform username fields

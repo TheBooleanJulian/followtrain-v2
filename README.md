@@ -11,6 +11,7 @@ A lightweight app that lets groups of people share and follow each other across 
 - Click any social media handle to open profiles directly
 - **Enhanced export system** - Single export button with customizable platform selection
 - **Smart username autocomplete** - Visual suggestions with avatar previews for duplicate names
+- **Edit your own entries** - Users can modify their own profile information
 - Copy shareable link or QR code with one click
 - **Admin controls** - Lock trains, kick participants, manage settings
 - No login or account required
@@ -144,6 +145,8 @@ See [ID_COLLISION_HANDLING.md](ID_COLLISION_HANDLING.md) for detailed documentat
 - Clear all participants (host only)
 - QR code generation for easy sharing
 - Real-time participant management
+- **Rename train functionality** - Change train name after creation
+- **Edit participant entries** - Users can modify their own information
 
 ### Security & Performance
 - Row Level Security (RLS) enabled on all tables

@@ -8,12 +8,18 @@
 - **Multi-Platform Support**: Support for Instagram, TikTok, Twitter, LinkedIn, YouTube, and Twitch
 - **Admin Features**: Host management capabilities including lock/unlock trains and kick participants
 - **Performance Improvements**: Avatar URL caching and rate limiting
+- **Export System Refactor**: Unified export interface with toggleable panel
+- **Dark Mode Improvements**: Enhanced UI contrast and visibility
 
 ### Changed
 - **Database Structure**: Extended participants table with multiple platform username fields
 - **Error Handling**: More robust error handling with specific collision detection
+- **Export UI**: Replaced color-changing buttons with proper checkboxes
 - **Documentation**: Updated README with comprehensive feature documentation
+- **UI/UX**: Improved button styling and visual hierarchy
 
 ### Fixed
 - **Train Creation Reliability**: Eliminated potential failure points from ID collisions
 - **Input Validation**: Platform-specific username validation rules
+- **Dark Mode Visibility**: QR code button color contrast issues
+- **Build Issues**: ESLint warnings and cross-platform compatibility

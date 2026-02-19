@@ -1,17 +1,19 @@
 # FollowTrain
 
-A lightweight app that lets groups of people share and follow each other on Instagram via a shared link. No login required.
+A lightweight app that lets groups of people share and follow each other across multiple social media platforms via a shared link. No login required.
 
 ## Features
 
 - Create a follow train with a unique shareable URL
 - **Automatic ID collision handling** - Never fails due to duplicate train IDs
-- Join a train by entering name, Instagram username, and optional bio
-- View all participants as profile cards
-- Click any card to open that person's Instagram profile in a new tab
-- Copy shareable link with one click
+- Join a train by entering name and social media usernames
+- View all participants as profile cards with avatars
+- Click any social media handle to open profiles directly
+- **Enhanced export system** - Single export button with customizable platform selection
+- Copy shareable link or QR code with one click
+- **Admin controls** - Lock trains, kick participants, manage settings
 - No login or account required
-- Mobile-first responsive design
+- Mobile-first responsive design with dark mode support
 
 ## Tech Stack
 
@@ -116,12 +118,22 @@ See [ID_COLLISION_HANDLING.md](ID_COLLISION_HANDLING.md) for detailed documentat
 - Instagram, TikTok, Twitter, LinkedIn, YouTube, Twitch
 - Platform-specific username validation
 - Dual-layer avatar system (primary platform + fallback)
+- Smart deep linking for mobile devices
+
+### Export System
+- **Unified export interface**: Single button reveals comprehensive export panel
+- **Customizable platform selection**: Checkboxes for each social media platform
+- **Bulk operations**: Select All/Clear All functionality
+- **Multiple export formats**: Copy to clipboard or download as TXT file
+- **Clean UI**: Toggleable panel with proper spacing and organization
 
 ### Admin Features
 - Host receives admin token for train management
 - Lock/unlock trains to control new joins
 - Kick participants from the train
 - Clear all participants (host only)
+- QR code generation for easy sharing
+- Real-time participant management
 
 ### Security & Performance
 - Row Level Security (RLS) enabled on all tables
@@ -129,6 +141,8 @@ See [ID_COLLISION_HANDLING.md](ID_COLLISION_HANDLING.md) for detailed documentat
 - Rate limiting for join requests
 - Cached avatar URLs for better performance
 - Automatic train expiry (72 hours)
+- ESLint enforced code quality
+- Cross-platform compatibility
 
 ## Constraints
 

@@ -836,11 +836,24 @@ const App = () => {
     twitch: true
   });
   
+  const [showExportPanel, setShowExportPanel] = useState(false);
+  
   const togglePlatformSelection = (platform) => {
     setSelectedPlatforms(prev => ({
       ...prev,
       [platform]: !prev[platform]
     }));
+  };
+  
+  const toggleAllPlatforms = (selectAll) => {
+    setSelectedPlatforms({
+      instagram: selectAll,
+      tiktok: selectAll,
+      twitter: selectAll,
+      linkedin: selectAll,
+      youtube: selectAll,
+      twitch: selectAll
+    });
   };
   
   // Actually use adminToken in the UI
@@ -1292,36 +1305,85 @@ const App = () => {
                   Admin Panel
                 </button>
               )}
-              <div className="flex flex-col gap-2">
-                <div className="flex gap-2">
-                  <button
-                    onClick={copyAllHandles}
-                    className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
-                  >
-                    <Copy size={16} />
-                    Export
-                  </button>
-                  <button
-                    onClick={() => exportToFile('txt')}
-                    className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors"
-                  >
-                    Download TXT
-                  </button>
-                </div>
-                                
-                {/* Platform Selection */}
-                <div className="flex flex-wrap gap-2 pt-2 border-t border-gray-200 dark:border-gray-700">
-                  {Object.entries(selectedPlatforms).map(([platform, isSelected]) => (
-                    <button
-                      key={platform}
-                      onClick={() => togglePlatformSelection(platform)}
-                      className={`px-2 py-1 rounded text-xs font-medium ${isSelected ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200' : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300'}`}
+              <button
+                onClick={() => setShowExportPanel(!showExportPanel)}
+                className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+              >
+                <Copy size={16} />
+                Export Options
+              </button>
+              
+              {/* Export Panel */}
+              {showExportPanel && (
+                <div className="mt-4 p-4 bg-white rounded-lg shadow-lg border border-gray-200 dark:bg-gray-800 dark:border-gray-700">
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 className="text-lg font-semibold text-gray-800 dark:text-white">Export Options</h3>
+                    <button 
+                      onClick={() => setShowExportPanel(false)}
+                      className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
                     >
-                      {platform.charAt(0).toUpperCase() + platform.slice(1)}
+                      ✕
                     </button>
-                  ))}
+                  </div>
+                  
+                  {/* Export Actions */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
+                    <button
+                      onClick={copyAllHandles}
+                      className="flex items-center justify-center gap-2 bg-blue-600 text-white px-4 py-3 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors w-full"
+                    >
+                      <Copy size={16} />
+                      Copy to Clipboard
+                    </button>
+                    <button
+                      onClick={() => exportToFile('txt')}
+                      className="flex items-center justify-center gap-2 bg-indigo-600 text-white px-4 py-3 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors w-full"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
+                      </svg>
+                      Download TXT File
+                    </button>
+                  </div>
+                  
+                  {/* Platform Selection with Checkboxes */}
+                  <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
+                    <div className="flex justify-between items-center mb-3">
+                      <h4 className="font-medium text-gray-700 dark:text-gray-300">Select Platforms to Export:</h4>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => toggleAllPlatforms(true)}
+                          className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded hover:bg-green-200 dark:bg-green-900/30 dark:text-green-300"
+                        >
+                          Select All
+                        </button>
+                        <button
+                          onClick={() => toggleAllPlatforms(false)}
+                          className="text-xs bg-red-100 text-red-800 px-2 py-1 rounded hover:bg-red-200 dark:bg-red-900/30 dark:text-red-300"
+                        >
+                          Clear All
+                        </button>
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                      {Object.entries(selectedPlatforms).map(([platform, isSelected]) => (
+                        <label key={platform} className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={() => togglePlatformSelection(platform)}
+                            className="h-4 w-4 text-purple-600 rounded border-gray-300 focus:ring-purple-500 dark:bg-gray-700 dark:border-gray-600"
+                          />
+                          <span className="text-sm text-gray-700 dark:text-gray-300 capitalize">
+                            {platform}
+                          </span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
         </div>

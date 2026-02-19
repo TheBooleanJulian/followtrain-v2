@@ -21,7 +21,8 @@
 - **Export UI**: Replaced color-changing buttons with proper checkboxes
 - **Documentation**: Updated README with comprehensive feature documentation
 - **UI/UX**: Improved button styling and visual hierarchy
-- **Social Media Inputs**: Enhanced with intelligent autocomplete functionality
+- **Input Fields**: Removed problematic autocomplete feature that was causing typing interruptions and false matches
+- **Social Media Inputs**: Simplified to regular input fields for better user experience
 
 ### Fixed
 - **Train Creation Reliability**: Eliminated potential failure points from ID collisions

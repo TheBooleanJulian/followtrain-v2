@@ -122,7 +122,7 @@ See [ID_COLLISION_HANDLING.md](ID_COLLISION_HANDLING.md) for detailed documentat
 - **LinkedIn profile URL requirement** for accurate profile linking
 - Dual-layer avatar system (primary platform + fallback)
 - Smart deep linking for mobile devices
-- **Intelligent autocomplete** with avatar previews for disambiguation
+- Clean, simple input fields for all social media platforms
 
 ### Export System
 - **Unified export interface**: Single button reveals comprehensive export panel
@@ -131,12 +131,6 @@ See [ID_COLLISION_HANDLING.md](ID_COLLISION_HANDLING.md) for detailed documentat
 - **Multiple export formats**: Copy to clipboard or download as TXT file
 - **Clean UI**: Toggleable panel with proper spacing and organization
 
-### Smart Autocomplete
-- **Visual disambiguation**: Avatar previews help distinguish between users with same names
-- **Real-time suggestions**: Shows relevant accounts as you type
-- **Platform-specific**: Tailored for each social media platform
-- **Intelligent matching**: Prioritizes exact matches and popular accounts
-- **Seamless integration**: Works across all social media input fields
 
 ### Admin Features
 - Host receives admin token for train management

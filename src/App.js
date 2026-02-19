@@ -164,11 +164,6 @@ const App = () => {
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState('');
   const [guestTrainId, setGuestTrainId] = useState('');
-  
-  // Auto-fill states for social media usernames
-  const [autocompleteSuggestions, setAutocompleteSuggestions] = useState({});
-  const [showAutocomplete, setShowAutocomplete] = useState({});
-  const [autocompleteLoading, setAutocompleteLoading] = useState({});
 
   // Extract train ID or debug flag from URL on initial load
   useEffect(() => {
@@ -665,138 +660,6 @@ const App = () => {
     return `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&size=48&background=random`;
   };
   
-  // Auto-complete functions for social media usernames
-  const fetchAutocompleteSuggestions = async (platform, query, fieldId) => {
-    if (!query || query.length < 2) {
-      setAutocompleteSuggestions(prev => ({ ...prev, [fieldId]: [] }));
-      setShowAutocomplete(prev => ({ ...prev, [fieldId]: false }));
-      return;
-    }
-    
-    setAutocompleteLoading(prev => ({ ...prev, [fieldId]: true }));
-    
-    try {
-      // Simulate API call - in a real implementation, you'd call the actual platform APIs
-      // For demo purposes, we'll generate mock suggestions
-      const mockSuggestions = [];
-      
-      // Generate 3-5 mock suggestions with different avatars
-      const suggestionCount = 3 + Math.floor(Math.random() * 3);
-      for (let i = 0; i < suggestionCount; i++) {
-        const randomSuffix = Math.floor(Math.random() * 1000);
-        const username = `${query}${randomSuffix}`;
-        const displayName = `${query.charAt(0).toUpperCase() + query.slice(1)} User ${randomSuffix}`;
-        
-        mockSuggestions.push({
-          username: username,
-          displayName: displayName,
-          avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&size=40&background=random&${i}`
-        });
-      }
-      
-      // Add the exact match if it's a valid username
-      if (isValidUsername(query, platform)) {
-        mockSuggestions.unshift({
-          username: query,
-          displayName: `${query.charAt(0).toUpperCase() + query.slice(1)} (Exact Match)`,
-          avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(query)}&size=40&background=00aa00&color=ffffff`
-        });
-      }
-      
-      setAutocompleteSuggestions(prev => ({ ...prev, [fieldId]: mockSuggestions }));
-      setShowAutocomplete(prev => ({ ...prev, [fieldId]: true }));
-      
-    } catch (error) {
-      console.error('Autocomplete error:', error);
-      setAutocompleteSuggestions(prev => ({ ...prev, [fieldId]: [] }));
-    } finally {
-      setAutocompleteLoading(prev => ({ ...prev, [fieldId]: false }));
-    }
-  };
-  
-  const handleAutocompleteSelect = (username, fieldId, formDataUpdater) => {
-    formDataUpdater(prev => ({ ...prev, [fieldId]: username }));
-    setAutocompleteSuggestions(prev => ({ ...prev, [fieldId]: [] }));
-    setShowAutocomplete(prev => ({ ...prev, [fieldId]: false }));
-  };
-  
-  const handleAutocompleteBlur = (fieldId) => {
-    // Small delay to allow click events on suggestions to fire first
-    setTimeout(() => {
-      setShowAutocomplete(prev => ({ ...prev, [fieldId]: false }));
-    }, 150);
-  };
-  
-  // Create autocomplete input component
-  const AutoCompleteInput = ({ platform, value, onChange, placeholder, formDataUpdater, fieldId, maxLength, className }) => {
-    const [localValue, setLocalValue] = useState(value || '');
-    
-    useEffect(() => {
-      setLocalValue(value || '');
-    }, [value]);
-    
-    const handleChange = (e) => {
-      const newValue = e.target.value;
-      setLocalValue(newValue);
-      onChange(e);
-      
-      // Trigger autocomplete after 300ms of no typing
-      clearTimeout(window.autocompleteTimer);
-      window.autocompleteTimer = setTimeout(() => {
-        fetchAutocompleteSuggestions(platform, newValue.replace('@', ''), fieldId);
-      }, 300);
-    };
-    
-    return (
-      <div className="relative">
-        <input
-          type="text"
-          value={localValue}
-          onChange={handleChange}
-          onBlur={() => handleAutocompleteBlur(fieldId)}
-          placeholder={placeholder}
-          maxLength={maxLength}
-          className={className}
-        />
-        
-        {/* Autocomplete dropdown */}
-        {showAutocomplete[fieldId] && autocompleteSuggestions[fieldId] && autocompleteSuggestions[fieldId].length > 0 && (
-          <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto dark:bg-gray-800 dark:border-gray-700">
-            {autocompleteLoading[fieldId] ? (
-              <div className="px-4 py-3 text-gray-500 text-center dark:text-gray-400">
-                Loading suggestions...
-              </div>
-            ) : (
-              autocompleteSuggestions[fieldId].map((suggestion, index) => (
-                <div
-                  key={index}
-                  onClick={() => handleAutocompleteSelect(suggestion.username, fieldId, formDataUpdater)}
-                  className="flex items-center px-4 py-3 hover:bg-gray-100 cursor-pointer border-b border-gray-100 last:border-b-0 dark:hover:bg-gray-700 dark:border-gray-700"
-                >
-                  <img
-                    src={suggestion.avatar}
-                    alt={suggestion.displayName}
-                    className="w-10 h-10 rounded-full mr-3"
-                    onError={(e) => {
-                      e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(suggestion.displayName)}&size=40&background=cccccc&color=666666`;
-                    }}
-                  />
-                  <div className="flex-1 min-w-0">
-                    <div className="font-medium text-gray-900 truncate dark:text-white">
-                      @{suggestion.username}
-                    </div>
-                    <div className="text-sm text-gray-500 truncate dark:text-gray-400">
-                      {suggestion.displayName}
-                    </div>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        )}
-      </div>
-    );
-  };
   
   // Join an existing train
   const handleJoinTrain = async (e) => {
@@ -1545,15 +1408,14 @@ const App = () => {
                 <label className="block text-gray-700 text-sm font-medium mb-1" htmlFor="instagram">
                   Instagram Username
                 </label>
-                <AutoCompleteInput
-                  platform="instagram"
+                <input
+                  id="instagram"
+                  type="text"
                   value={createFormData.instagram}
                   onChange={(e) => setCreateFormData({...createFormData, instagram: e.target.value})}
-                  formDataUpdater={setCreateFormData}
-                  fieldId="instagram"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white dark:border-gray-600"
                   placeholder="@username"
                   maxLength="30"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white dark:border-gray-600"
                 />
                 <p className="text-xs text-gray-500 mt-1">Letters, numbers, dots, underscores (max 30 chars)</p>
               </div>
@@ -1562,15 +1424,14 @@ const App = () => {
                 <label className="block text-gray-700 text-sm font-medium mb-1" htmlFor="tiktok">
                   TikTok Username
                 </label>
-                <AutoCompleteInput
-                  platform="tiktok"
+                <input
+                  id="tiktok"
+                  type="text"
                   value={createFormData.tiktok}
                   onChange={(e) => setCreateFormData({...createFormData, tiktok: e.target.value})}
-                  formDataUpdater={setCreateFormData}
-                  fieldId="tiktok"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white dark:border-gray-600"
                   placeholder="@username"
                   maxLength="50"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white dark:border-gray-600"
                 />
                 <p className="text-xs text-gray-500 mt-1">Letters, numbers, dots, underscores (max 50 chars)</p>
               </div>
@@ -1579,15 +1440,14 @@ const App = () => {
                 <label className="block text-gray-700 text-sm font-medium mb-1" htmlFor="twitter">
                   Twitter/X Username
                 </label>
-                <AutoCompleteInput
-                  platform="twitter"
+                <input
+                  id="twitter"
+                  type="text"
                   value={createFormData.twitter}
                   onChange={(e) => setCreateFormData({...createFormData, twitter: e.target.value})}
-                  formDataUpdater={setCreateFormData}
-                  fieldId="twitter"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white dark:border-gray-600"
                   placeholder="@username"
                   maxLength="50"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white dark:border-gray-600"
                 />
                 <p className="text-xs text-gray-500 mt-1">Letters, numbers, underscores (max 50 chars)</p>
               </div>
@@ -2321,15 +2181,14 @@ const App = () => {
                   <label className="block text-gray-700 text-sm font-medium mb-1" htmlFor="joinInstagram">
                     Instagram Username
                   </label>
-                  <AutoCompleteInput
-                    platform="instagram"
+                  <input
+                    id="joinInstagram"
+                    type="text"
                     value={joinFormData.instagram}
                     onChange={(e) => setJoinFormData({...joinFormData, instagram: e.target.value})}
-                    formDataUpdater={setJoinFormData}
-                    fieldId="joinInstagram"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white dark:border-gray-600"
                     placeholder="@username"
                     maxLength="30"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white dark:border-gray-600"
                   />
                 </div>
                 
@@ -2337,15 +2196,14 @@ const App = () => {
                   <label className="block text-gray-700 text-sm font-medium mb-1" htmlFor="joinTiktok">
                     TikTok Username
                   </label>
-                  <AutoCompleteInput
-                    platform="tiktok"
+                  <input
+                    id="joinTiktok"
+                    type="text"
                     value={joinFormData.tiktok}
                     onChange={(e) => setJoinFormData({...joinFormData, tiktok: e.target.value})}
-                    formDataUpdater={setJoinFormData}
-                    fieldId="joinTiktok"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white dark:border-gray-600"
                     placeholder="@username"
                     maxLength="50"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white dark:border-gray-600"
                   />
                 </div>
                 
@@ -2353,15 +2211,14 @@ const App = () => {
                   <label className="block text-gray-700 text-sm font-medium mb-1" htmlFor="joinTwitter">
                     Twitter/X Username
                   </label>
-                  <AutoCompleteInput
-                    platform="twitter"
+                  <input
+                    id="joinTwitter"
+                    type="text"
                     value={joinFormData.twitter}
                     onChange={(e) => setJoinFormData({...joinFormData, twitter: e.target.value})}
-                    formDataUpdater={setJoinFormData}
-                    fieldId="joinTwitter"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white dark:border-gray-600"
                     placeholder="@username"
                     maxLength="50"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white dark:border-gray-600"
                   />
                 </div>
                 

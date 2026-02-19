@@ -138,26 +138,6 @@ const App = () => {
     }
   }, []); // Run once after mount
   
-  // Restore admin token from localStorage when trainId changes
-  useEffect(() => {
-    if (trainId) {
-      const savedToken = localStorage.getItem(`followtrain_admin_${trainId}`);
-      if (savedToken) {
-        setAdminToken(savedToken);
-        setIsAdmin(true);
-        console.log('Restored admin token from localStorage for train:', trainId);
-      }
-    }
-  }, [trainId, setAdminToken, setIsAdmin]);
-  
-  // Save admin token to localStorage when it changes
-  useEffect(() => {
-    if (adminToken && trainId) {
-      localStorage.setItem(`followtrain_admin_${trainId}`, adminToken);
-      console.log('Saved admin token to localStorage for train:', trainId);
-    }
-  }, [adminToken, trainId]);
-  
   // Debug: Log every second to verify JavaScript is running
   useEffect(() => {
     console.log('App is running, time:', new Date().toISOString());
@@ -186,6 +166,26 @@ const App = () => {
   const [adminToken, setAdminToken] = useState(''); // Store admin token
   const [trainLocked, setTrainLocked] = useState(false); // Track if train is locked
   const [showAdminPanel, setShowAdminPanel] = useState(false); // Show/hide admin panel
+  
+  // Restore admin token from localStorage when trainId changes
+  useEffect(() => {
+    if (trainId) {
+      const savedToken = localStorage.getItem(`followtrain_admin_${trainId}`);
+      if (savedToken) {
+        setAdminToken(savedToken);
+        setIsAdmin(true);
+        console.log('Restored admin token from localStorage for train:', trainId);
+      }
+    }
+  }, [trainId, setAdminToken, setIsAdmin]);
+  
+  // Save admin token to localStorage when it changes
+  useEffect(() => {
+    if (adminToken && trainId) {
+      localStorage.setItem(`followtrain_admin_${trainId}`, adminToken);
+      console.log('Saved admin token to localStorage for train:', trainId);
+    }
+  }, [adminToken, trainId]);
 
   const [participants, setParticipants] = useState([]);
   const [showJoinModal, setShowJoinModal] = useState(false);

@@ -3,7 +3,6 @@ import { Moon, Sun } from 'lucide-react';
 import { Copy, Plus, QrCode } from 'lucide-react';
 import { supabase } from './supabaseClient';
 import QRCode from 'react-qr-code';
-import followTrainIcon from './followtrain-icon.png';
 
 // Utility function to detect mobile devices
 const isMobileDevice = () => {
@@ -1086,7 +1085,7 @@ const App = () => {
     <div className="min-h-screen bg-gradient-to-br from-purple-500 via-pink-500 to-red-500 flex flex-col items-center justify-center p-4 dark:from-gray-800 dark:to-gray-900">
       <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full text-center relative dark:bg-gray-800 dark:text-white">
         <div className="flex justify-center mb-6 relative">
-          <img src={followTrainIcon} alt="FollowTrain Icon" className="h-24 w-24 object-contain" />
+          <img src="/followtrain-icon.png" alt="FollowTrain Icon" className="h-24 w-24 object-contain" />
           <button
             onClick={toggleDarkMode}
             className="absolute top-0 right-0 bg-gray-200 text-gray-800 px-3 py-1 rounded-lg text-sm font-medium hover:bg-gray-300 transition-colors dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600"
@@ -2020,7 +2019,7 @@ const App = () => {
     <div className="min-h-screen bg-gradient-to-br from-purple-500 via-pink-500 to-red-500 flex flex-col items-center justify-center p-4 dark:from-gray-800 dark:to-gray-900">
       <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full text-center relative dark:bg-gray-800 dark:text-white">
         <div className="flex justify-center mb-6 relative">
-          <img src={followTrainIcon} alt="FollowTrain Icon" className="h-24 w-24 object-contain" />
+          <img src="/followtrain-icon.png" alt="FollowTrain Icon" className="h-24 w-24 object-contain" />
           <button
             onClick={toggleDarkMode}
             className="absolute top-0 right-0 bg-gray-200 text-gray-800 px-3 py-1 rounded-lg text-sm font-medium hover:bg-gray-300 transition-colors dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600"

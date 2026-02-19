@@ -1285,7 +1285,7 @@ const App = () => {
               </button>
               <button
                 onClick={() => setShowQRModal(true)}
-                className="flex items-center gap-2 bg-gray-800 text-white px-4 py-2 rounded-lg text-sm font-medium hover:opacity-90 transition-opacity"
+                className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700 transition-colors dark:bg-green-700 dark:hover:bg-green-600"
               >
                 <QrCode size={16} />
                 QR Code

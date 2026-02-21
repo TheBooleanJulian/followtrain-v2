@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { Moon, Sun } from 'lucide-react';
 import { Copy, Plus, QrCode } from 'lucide-react';
-import { supabase } from './supabaseClient';
+import { supabase, createSecureSupabaseClient } from './supabaseClient';
 import QRCode from 'react-qr-code';
 import LegalPage from './LegalPage';
 
@@ -1003,7 +1003,8 @@ const App = () => {
   // Admin control functions
   const toggleTrainLock = async () => {
     try {
-      const { error } = await supabase
+      const secureSupabase = createSecureSupabaseClient(adminToken);
+      const { error } = await secureSupabase
         .from('trains')
         .update({ locked: !trainLocked })
         .eq('id', trainId);
@@ -1028,7 +1029,8 @@ const App = () => {
     }
     
     try {
-      const { error } = await supabase
+      const secureSupabase = createSecureSupabaseClient(adminToken);
+      const { error } = await secureSupabase
         .from('participants')
         .delete()
         .eq('id', userId)
@@ -1054,7 +1056,8 @@ const App = () => {
     }
     
     try {
-      const { error } = await supabase
+      const secureSupabase = createSecureSupabaseClient(adminToken);
+      const { error } = await secureSupabase
         .from('participants')
         .delete()
         .eq('train_id', trainId);
@@ -1086,7 +1089,8 @@ const App = () => {
     }
     
     try {
-      const { error } = await supabase
+      const secureSupabase = createSecureSupabaseClient(adminToken);
+      const { error } = await secureSupabase
         .from('trains')
         .update({ name: newTrainName.trim() })
         .eq('id', trainId);
@@ -1193,7 +1197,9 @@ const App = () => {
         bio: sanitizedEditData.bio
       };
       
-      const { error } = await supabase
+      // Use secure client with participant ID for self-edit validation
+      const secureSupabase = createSecureSupabaseClient(null, participantId);
+      const { error } = await secureSupabase
         .from('participants')
         .update(updateData)
         .eq('id', participantId);

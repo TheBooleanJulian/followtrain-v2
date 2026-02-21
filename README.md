@@ -96,8 +96,9 @@ cp .env.example .env
 Then update `.env` with your Supabase credentials.
 
 5. Set up the database:
-   - Run the SQL schema from `schema.sql` in your Supabase SQL Editor
+   - Run the SQL schema from `schema_fresh.sql` in your Supabase SQL Editor for the latest security enhancements
    - Make sure to enable Realtime on the participants table
+   - The schema includes proper RLS policies with validation instead of overly permissive policies
 
 6. Start the development server:
 ```bash
@@ -189,7 +190,8 @@ See [ID_COLLISION_HANDLING.md](ID_COLLISION_HANDLING.md) for detailed documentat
 - **Edit participant entries** - Users can modify their own information
 
 ### Security & Performance
-- Row Level Security (RLS) enabled on all tables
+- **Enhanced Row Level Security (RLS) with proper validation policies** - No more overly permissive `WITH CHECK (true)` policies
+- **Secure header-based authentication** - Uses `x-admin-token` for admin operations and `x-participant-id` for self-edit validation
 - **Comprehensive input sanitization and validation to prevent prompt injection attacks**
 - Input validation and sanitization for all user inputs
 - Rate limiting for join requests
@@ -197,6 +199,8 @@ See [ID_COLLISION_HANDLING.md](ID_COLLISION_HANDLING.md) for detailed documentat
 - Automatic train expiry (72 hours)
 - ESLint enforced code quality
 - Cross-platform compatibility
+- **Source maps disabled in production builds** to prevent code exposure
+- **Proper environment variable management** with secure Vercel deployment practices
 
 ## Constraints
 

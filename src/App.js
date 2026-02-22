@@ -281,7 +281,7 @@ const App = () => {
     return (
       <div className="fixed bottom-4 right-4 w-96 h-80 bg-black bg-opacity-90 text-green-400 text-xs font-mono p-3 rounded-lg z-50 border border-green-400 overflow-hidden">
         <div className="flex justify-between items-center mb-2">
-          <span className="font-bold">DEBUG PANEL</span>
+          <span className="font-bold">{i18n.t('debugPanel')}</span>
           <button 
             onClick={() => setDebugMode(false)}
             className="text-red-400 hover:text-red-300"
@@ -291,7 +291,7 @@ const App = () => {
         </div>
         
         <div className="mb-3">
-          <div className="text-yellow-400 font-bold mb-1">DEBUG INFO:</div>
+          <div className="text-yellow-400 font-bold mb-1">{i18n.t('debugInfo')}:</div>
           <div className="space-y-1 max-h-20 overflow-y-auto">
             {Object.entries(debugInfo).map(([key, value]) => (
               <div key={key} className="flex">
@@ -303,7 +303,7 @@ const App = () => {
         </div>
         
         <div>
-          <div className="text-yellow-400 font-bold mb-1">LOGS:</div>
+          <div className="text-yellow-400 font-bold mb-1">{i18n.t('logs')}:</div>
           <div className="space-y-1 max-h-32 overflow-y-auto">
             {debugLogs.map((log, index) => (
               <div key={index} className="text-white">
@@ -613,7 +613,7 @@ const App = () => {
     return (
       <div className="max-w-4xl mx-auto p-4 mt-4 bg-white border border-gray-200 rounded-xl shadow-sm dark:bg-gray-800 dark:border-gray-700">
         <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-bold text-gray-800 dark:text-white">Theme Customization</h3>
+          <h3 className="text-lg font-bold text-gray-800 dark:text-white">{i18n.t('themeCustomization')}</h3>
           <button 
             onClick={() => setShowThemePanel(false)}
             className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
@@ -623,7 +623,7 @@ const App = () => {
         </div>
         
         <div className="mb-6">
-          <h4 className="font-medium text-gray-700 mb-3 dark:text-gray-300">Theme Presets</h4>
+          <h4 className="font-medium text-gray-700 mb-3 dark:text-gray-300">{i18n.t('themePresets')}</h4>
           <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
             {themePresets.map((preset, index) => (
               <button
@@ -648,10 +648,10 @@ const App = () => {
         </div>
         
         <div>
-          <h4 className="font-medium text-gray-700 mb-3 dark:text-gray-300">Custom Colors</h4>
+          <h4 className="font-medium text-gray-700 mb-3 dark:text-gray-300">{i18n.t('customColors')}</h4>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-gray-300">Primary</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-gray-300">{i18n.t('primary')}</label>
               <input
                 type="color"
                 value={trainTheme.primaryColor}
@@ -660,7 +660,7 @@ const App = () => {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-gray-300">Secondary</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-gray-300">{i18n.t('secondary')}</label>
               <input
                 type="color"
                 value={trainTheme.secondaryColor}
@@ -669,7 +669,7 @@ const App = () => {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-gray-300">Accent</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-gray-300">{i18n.t('accent')}</label>
               <input
                 type="color"
                 value={trainTheme.accentColor}
@@ -678,7 +678,7 @@ const App = () => {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-gray-300">Background</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-gray-300">{i18n.t('background')}</label>
               <input
                 type="color"
                 value={trainTheme.backgroundColor}
@@ -687,7 +687,7 @@ const App = () => {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-gray-300">Text</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-gray-300">{i18n.t('text')}</label>
               <input
                 type="color"
                 value={trainTheme.textColor}
@@ -696,7 +696,7 @@ const App = () => {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-gray-300">Card</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-gray-300">{i18n.t('card')}</label>
               <input
                 type="color"
                 value={trainTheme.cardColor}
@@ -724,7 +724,7 @@ const App = () => {
                   background: `linear-gradient(135deg, ${trainTheme.primaryColor}, ${trainTheme.secondaryColor})`
                 }}
               />
-              <span className="font-medium">Sample Card</span>
+              <span className="font-medium">{i18n.t('sampleCard')}</span>
             </div>
             <p className="text-sm">This is how your train will look with these colors.</p>
             <button 
@@ -788,7 +788,7 @@ const App = () => {
     return (
       <div className="max-w-4xl mx-auto p-4 mt-4 bg-white border border-gray-200 rounded-xl shadow-sm dark:bg-gray-800 dark:border-gray-700">
         <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-bold text-gray-800 dark:text-white">Activity Feed</h3>
+          <h3 className="text-lg font-bold text-gray-800 dark:text-white">{i18n.t('activityFeed')}</h3>
           <button 
             onClick={() => setShowActivityFeed(false)}
             className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
@@ -2379,7 +2379,7 @@ const App = () => {
               <div className="w-full border-t border-gray-300 dark:border-gray-600"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-white text-gray-500 dark:bg-gray-800 dark:text-gray-400">Or</span>
+              <span className="px-2 bg-white text-gray-500 dark:bg-gray-800 dark:text-gray-400">{i18n.t('or')}</span>
             </div>
           </div>
           
@@ -2388,7 +2388,7 @@ const App = () => {
               type="text"
               value={guestTrainId}
               onChange={(e) => setGuestTrainId(e.target.value.toUpperCase())}
-              placeholder="Enter Train ID"
+              placeholder={i18n.t('enterTrainId')}
               maxLength="6"
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white text-gray-900 dark:bg-gray-700 dark:text-white dark:border-gray-600 dark:focus:ring-purple-400 text-center font-mono tracking-widest"
             />
@@ -2413,7 +2413,7 @@ const App = () => {
     <div className="min-h-screen bg-gradient-to-br from-purple-500 via-pink-500 to-red-500 flex flex-col items-center justify-center p-4 dark:from-gray-800 dark:to-gray-900 overflow-y-auto">
       <div className="bg-white rounded-2xl shadow-xl p-6 max-w-md w-full relative">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Create a Train</h2>
+          <h2 className="text-2xl font-bold text-gray-800 dark:text-white">{i18n.t('createTrain')}</h2>
           <button
             onClick={toggleDarkMode}
             className="bg-gray-200 text-gray-800 px-3 py-1 rounded-lg text-sm font-medium hover:bg-gray-300 transition-colors dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600"

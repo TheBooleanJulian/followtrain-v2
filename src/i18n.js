@@ -76,7 +76,24 @@ const translations = {
     // Debug
     debugMode: 'Debug Mode',
     enableDebug: 'Enable Debug',
-    disableDebug: 'Disable Debug'
+    disableDebug: 'Disable Debug',
+    
+    // Additional UI Elements
+    language: 'Language',
+    debugPanel: 'Debug Panel',
+    debugInfo: 'Debug Info',
+    logs: 'Logs',
+    or: 'Or',
+    enterTrainId: 'Enter Train ID',
+    sampleCard: 'Sample Card',
+    primary: 'Primary',
+    secondary: 'Secondary',
+    accent: 'Accent',
+    background: 'Background',
+    text: 'Text',
+    card: 'Card',
+    terms: 'Terms of Service',
+    privacy: 'Privacy Policy'
   },
   
   es: {
@@ -153,7 +170,24 @@ const translations = {
     // Debug
     debugMode: 'Modo de Depuración',
     enableDebug: 'Habilitar Depuración',
-    disableDebug: 'Deshabilitar Depuración'
+    disableDebug: 'Deshabilitar Depuración',
+    
+    // Additional UI Elements
+    language: 'Idioma',
+    debugPanel: 'Panel de Depuración',
+    debugInfo: 'Info de Depuración',
+    logs: 'Registros',
+    or: 'O',
+    enterTrainId: 'Ingresar ID del Tren',
+    sampleCard: 'Tarjeta de Ejemplo',
+    primary: 'Primario',
+    secondary: 'Secundario',
+    accent: 'Acento',
+    background: 'Fondo',
+    text: 'Texto',
+    card: 'Tarjeta',
+    terms: 'Términos de Servicio',
+    privacy: 'Política de Privacidad'
   },
   
   fr: {
@@ -230,7 +264,118 @@ const translations = {
     // Debug
     debugMode: 'Mode Débogage',
     enableDebug: 'Activer le Débogage',
-    disableDebug: 'Désactiver le Débogage'
+    disableDebug: 'Désactiver le Débogage',
+    
+    // Additional UI Elements
+    language: 'Langue',
+    debugPanel: 'Panneau de Débogage',
+    debugInfo: 'Info de Débogage',
+    logs: 'Journaux',
+    or: 'Ou',
+    enterTrainId: 'Entrer ID du Train',
+    sampleCard: 'Carte d\'Exemple',
+    primary: 'Primaire',
+    secondary: 'Secondaire',
+    accent: 'Accent',
+    background: 'Arrière-plan',
+    text: 'Texte',
+    card: 'Carte',
+    terms: 'Conditions d\'Utilisation',
+    privacy: 'Politique de Confidentialité'
+  },
+  
+  zh: {
+    // Core UI
+    appTitle: 'FollowTrain',
+    appDescription: '与群组分享您的社交档案。无需登录。',
+    joinTrain: '加入列车',
+    createTrain: '创建列车',
+    trainName: '列车名称',
+    displayName: '显示名称',
+    participants: '参与者',
+    
+    // Social Media Platforms
+    instagram: 'Instagram',
+    tiktok: 'TikTok',
+    twitter: 'X/推特',
+    linkedin: '领英',
+    youtube: 'YouTube',
+    twitch: 'Twitch',
+    facebook: 'Facebook',
+    whatsapp: 'WhatsApp',
+    telegram: 'Telegram',
+    discord: 'Discord',
+    github: 'GitHub',
+    
+    // Actions
+    join: '加入',
+    create: '创建',
+    cancel: '取消',
+    save: '保存',
+    edit: '编辑',
+    delete: '删除',
+    copy: '复制',
+    export: '导出',
+    lock: '锁定',
+    unlock: '解锁',
+    
+    // Messages
+    loading: '加载中...',
+    saving: '保存中...',
+    success: '成功！',
+    error: '错误',
+    noParticipants: '暂无参与者',
+    trainNotFound: '列车未找到',
+    invalidTrainId: '无效的列车ID',
+    
+    // Activity Feed
+    activityFeed: '活动动态',
+    joinedTrain: '加入了列车',
+    leftTrain: '离开了列车',
+    updatedProfile: '更新了个人资料',
+    trainLocked: '列车已锁定',
+    trainUnlocked: '列车已解锁',
+    
+    // Admin Panel
+    adminPanel: '管理面板',
+    trainControls: '列车控制',
+    reclaimAccess: '恢复管理员权限',
+    clearTrain: '清空列车',
+    
+    // Theme Customization
+    themeCustomization: '主题定制',
+    themePresets: '主题预设',
+    customColors: '自定义颜色',
+    preview: '预览',
+    
+    // Export Options
+    exportOptions: '导出选项',
+    selectAll: '全选',
+    clearAll: '清空',
+    copyToClipboard: '复制到剪贴板',
+    downloadAsFile: '下载为文件',
+    
+    // Debug
+    debugMode: '调试模式',
+    enableDebug: '启用调试',
+    disableDebug: '禁用调试',
+    
+    // Additional UI Elements
+    language: '语言',
+    debugPanel: '调试面板',
+    debugInfo: '调试信息',
+    logs: '日志',
+    or: '或',
+    enterTrainId: '输入列车ID',
+    sampleCard: '示例卡片',
+    primary: '主色',
+    secondary: '辅色',
+    accent: '强调色',
+    background: '背景色',
+    text: '文字色',
+    card: '卡片色',
+    terms: '服务条款',
+    privacy: '隐私政策'
   }
 };
 
@@ -319,7 +464,8 @@ class I18nManager {
     const names = {
       en: 'English',
       es: 'Español',
-      fr: 'Français'
+      fr: 'Français',
+      zh: '中文'
     };
     return names[langCode] || langCode;
   }

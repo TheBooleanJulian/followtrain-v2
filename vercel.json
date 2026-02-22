@@ -1,5 +1,5 @@
 {
-  "buildCommand": "GENERATE_SOURCEMAP=false npm run build",
+  "buildCommand": "npx react-scripts build",
   "outputDirectory": "build",
   "framework": "create-react-app",
   "routes": [

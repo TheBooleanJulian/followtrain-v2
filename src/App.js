@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { Moon, Sun } from 'lucide-react';
 import { Copy, Plus, QrCode, Globe } from 'lucide-react';
@@ -180,8 +180,8 @@ const App = () => {
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [showInstallButton, setShowInstallButton] = useState(false);
   
-  // Debug logging function
-  const debugLog = (message, data = null) => {
+  // Debug logging function - wrapped in useCallback for stable reference
+  const debugLog = useCallback((message, data = null) => {
     if (!debugMode) return;
     
     const logEntry = {
@@ -198,7 +198,7 @@ const App = () => {
       ...prev,
       [message]: data || true
     }));
-  };
+  }, [debugMode]);
   
   // Language change function
   const changeLanguage = (langCode) => {
@@ -274,27 +274,6 @@ const App = () => {
     );
   };
   
-  // Add debug info updates
-  useEffect(() => {
-    debugLog('Current state update', { 
-      currentLanguage, 
-      debugMode,
-      trainId,
-      participants: participants.length 
-    });
-    
-    // Update debug info
-    setDebugInfo(prev => ({
-      ...prev,
-      language: currentLanguage,
-      trainId: trainId || 'none',
-      participants: participants.length,
-      theme: `${trainTheme.primaryColor}/${trainTheme.secondaryColor}`,
-      i18n_debug: i18n.debugMode,
-      i18n_logs: i18n.getDebugInfo()?.debugLogs?.length || 0
-    }));
-  }, [currentLanguage, debugMode, trainId, participants.length, trainTheme]);
-  
   // Debug panel component
   const DebugPanel = () => {
     if (!debugMode) return null;
@@ -362,7 +341,7 @@ const App = () => {
         setDarkMode(shouldUseDark);
       }
     }
-  }, []); // Run once after mount
+  }, [debugLog]); // Run once after mount
   
   // Debug: Log every second to verify JavaScript is running
   useEffect(() => {
@@ -430,7 +409,7 @@ const App = () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
       window.removeEventListener('appinstalled', handleAppInstalled);
     };
-  }, []);
+  }, [debugLog]);
   
   // Online/offline status tracking
   useEffect(() => {
@@ -451,7 +430,7 @@ const App = () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
     };
-  }, []);
+  }, [debugLog]);
   
   // Handle service worker messages
   useEffect(() => {
@@ -470,7 +449,7 @@ const App = () => {
     return () => {
       navigator.serviceWorker.removeEventListener('message', handleMessage);
     };
-  }, []);
+  }, [debugLog]);
   
   // PWA Installation function
   const installPWA = async () => {
@@ -597,7 +576,7 @@ const App = () => {
   const [showQRModal, setShowQRModal] = useState(false);
   const [showActivityFeed, setShowActivityFeed] = useState(false); // Toggle activity feed visibility
   const [activities, setActivities] = useState([]); // Store activity logs
-  const [analytics, setAnalytics] = useState({}); // Store analytics data
+  // const [analytics, setAnalytics] = useState({}); // Store analytics data - commented out until UI implementation
   const [showThemePanel, setShowThemePanel] = useState(false); // Toggle theme customization panel
   const [trainTheme, setTrainTheme] = useState({
     primaryColor: '#8b5cf6', // purple-500
@@ -778,7 +757,6 @@ const App = () => {
 
     const getActivityMessage = (activity) => {
       const participantName = activity.participant?.display_name || 'Unknown';
-      const timeAgo = formatTimeAgo(new Date(activity.created_at));
       
       switch (activity.action_type) {
         case 'join':
@@ -1002,7 +980,7 @@ const App = () => {
     } else {
       debugLog('Unknown route', path);
     }
-  }, []);
+  }, [debugLog]);
 
   // Subscribe to real-time updates for participants
   useEffect(() => {
@@ -1103,49 +1081,49 @@ const App = () => {
       )
       .subscribe();
 
-    // Subscribe to real-time analytics updates
-    const analyticsChannel = supabase
-      .channel(`analytics:${trainId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'analytics',
-          filter: `train_id=eq.${trainId}`
-        },
-        (payload) => {
-          // Update analytics state in real-time
-          setAnalytics(prev => {
-            const newAnalytics = { ...prev };
-            const participantId = payload.new.participant_id;
-            
-            if (!newAnalytics[participantId]) {
-              newAnalytics[participantId] = {
-                profileViews: 0,
-                socialClicks: {}
-              };
-            }
-            
-            if (payload.new.metric_type === 'profile_view') {
-              newAnalytics[participantId].profileViews += 1;
-            } else if (payload.new.metric_type === 'social_click') {
-              if (!newAnalytics[participantId].socialClicks[payload.new.platform]) {
-                newAnalytics[participantId].socialClicks[payload.new.platform] = 0;
-              }
-              newAnalytics[participantId].socialClicks[payload.new.platform] += 1;
-            }
-            
-            return newAnalytics;
-          });
-        }
-      )
-      .subscribe();
+    // Subscribe to real-time analytics updates - commented out until UI implementation
+    // const analyticsChannel = supabase
+    //   .channel(`analytics:${trainId}`)
+    //   .on(
+    //     'postgres_changes',
+    //     {
+    //       event: 'INSERT',
+    //       schema: 'public',
+    //       table: 'analytics',
+    //       filter: `train_id=eq.${trainId}`
+    //     },
+    //     (payload) => {
+    //       // Update analytics state in real-time
+    //       // setAnalytics(prev => {
+    //       //   const newAnalytics = { ...prev };
+    //       //   const participantId = payload.new.participant_id;
+    //       //   
+    //       //   if (!newAnalytics[participantId]) {
+    //       //     newAnalytics[participantId] = {
+    //       //       profileViews: 0,
+    //       //       socialClicks: {}
+    //       //     };
+    //       //   }
+    //       //   
+    //       //   if (payload.new.metric_type === 'profile_view') {
+    //       //     newAnalytics[participantId].profileViews += 1;
+    //       //   } else if (payload.new.metric_type === 'social_click') {
+    //       //     if (!newAnalytics[participantId].socialClicks[payload.new.platform]) {
+    //       //       newAnalytics[participantId].socialClicks[payload.new.platform] = 0;
+    //       //     }
+    //       //     newAnalytics[participantId].socialClicks[payload.new.platform] += 1;
+    //       //   }
+    //       //   
+    //       //   return newAnalytics;
+    //       // });
+    //     }
+    //   )
+    //   .subscribe();
 
     return () => {
       supabase.removeChannel(participantsChannel);
       supabase.removeChannel(activityChannel);
-      supabase.removeChannel(analyticsChannel);
+      // supabase.removeChannel(analyticsChannel);
     };
   }, [trainId]);
 
@@ -1161,6 +1139,29 @@ const App = () => {
       }
     }
   }, [darkMode]);
+
+  // Add debug info updates
+  useEffect(() => {
+    if (!debugMode) return;
+    
+    debugLog('Current state update', { 
+      currentLanguage, 
+      debugMode,
+      trainId,
+      participants: participants.length 
+    });
+    
+    // Update debug info
+    setDebugInfo(prev => ({
+      ...prev,
+      language: currentLanguage,
+      trainId: trainId || 'none',
+      participants: participants.length,
+      theme: `${trainTheme.primaryColor}/${trainTheme.secondaryColor}`,
+      i18n_debug: i18n.debugMode,
+      i18n_logs: i18n.getDebugInfo()?.debugLogs?.length || 0
+    }));
+  }, [currentLanguage, debugMode, trainId, participants.length, trainTheme, debugLog, setDebugInfo]);
 
   // Load participants when trainId changes
   useEffect(() => {
@@ -1190,7 +1191,7 @@ const App = () => {
     };
 
     fetchParticipants();
-  }, [trainId]);
+  }, [trainId, debugLog]);
 
   // Load activity logs when trainId changes
   useEffect(() => {
@@ -1217,45 +1218,45 @@ const App = () => {
     fetchActivities();
   }, [trainId]);
 
-  // Load analytics when trainId changes
-  useEffect(() => {
-    if (!trainId) return;
-
-    const fetchAnalytics = async () => {
-      const { data, error } = await supabase
-        .from('analytics')
-        .select('*')
-        .eq('train_id', trainId);
-
-      if (error) {
-        console.error('Error fetching analytics:', error);
-      } else {
-        // Process analytics data into a more usable format
-        const processedAnalytics = {};
-        data.forEach(item => {
-          if (!processedAnalytics[item.participant_id]) {
-            processedAnalytics[item.participant_id] = {
-              profileViews: 0,
-              socialClicks: {}
-            };
-          }
-          
-          if (item.metric_type === 'profile_view') {
-            processedAnalytics[item.participant_id].profileViews += 1;
-          } else if (item.metric_type === 'social_click') {
-            if (!processedAnalytics[item.participant_id].socialClicks[item.platform]) {
-              processedAnalytics[item.participant_id].socialClicks[item.platform] = 0;
-            }
-            processedAnalytics[item.participant_id].socialClicks[item.platform] += 1;
-          }
-        });
-        
-        setAnalytics(processedAnalytics);
-      }
-    };
-
-    fetchAnalytics();
-  }, [trainId]);
+  // Load analytics when trainId changes - commented out until UI implementation
+  // useEffect(() => {
+  //   if (!trainId) return;
+  //
+  //   const fetchAnalytics = async () => {
+  //     const { data, error } = await supabase
+  //       .from('analytics')
+  //       .select('*')
+  //       .eq('train_id', trainId);
+  //
+  //     if (error) {
+  //       console.error('Error fetching analytics:', error);
+  //     } else {
+  //       // Process analytics data into a more usable format
+  //       const processedAnalytics = {};
+  //       data.forEach(item => {
+  //         if (!processedAnalytics[item.participant_id]) {
+  //           processedAnalytics[item.participant_id] = {
+  //             profileViews: 0,
+  //             socialClicks: {}
+  //           };
+  //         }
+  //         
+  //         if (item.metric_type === 'profile_view') {
+  //           processedAnalytics[item.participant_id].profileViews += 1;
+  //         } else if (item.metric_type === 'social_click') {
+  //           if (!processedAnalytics[item.participant_id].socialClicks[item.platform]) {
+  //             processedAnalytics[item.participant_id].socialClicks[item.platform] = 0;
+  //           }
+  //           processedAnalytics[item.participant_id].socialClicks[item.platform] += 1;
+  //         }
+  //       });
+  //       
+  //       // setAnalytics(processedAnalytics);
+  //     }
+  //   };
+  //
+  //   fetchAnalytics();
+  // }, [trainId]);
 
   // Validate usernames for different platforms
   const isValidUsername = (username, platform) => {

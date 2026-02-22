@@ -1,5 +1,5 @@
 {
-  "buildCommand": "chmod +x node_modules/.bin/react-scripts && CI=false npm run build",
+  "buildCommand": "chmod +x node_modules/.bin/react-scripts && npm run build",
   "outputDirectory": "build",
   "framework": "create-react-app",
   "routes": [

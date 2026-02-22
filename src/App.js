@@ -164,7 +164,20 @@ const logSocialClick = async (participantId, platform, trainId) => {
 const App = () => {
   console.log('App component mounted');
   
-  const [darkMode, setDarkMode] = useState(false); // Default to false initially
+  const [darkMode, setDarkMode] = useState(() => {
+    // Initialize dark mode state based on saved preference or system preference
+    if (typeof window !== 'undefined') {
+      const savedTheme = localStorage.getItem('theme');
+      if (savedTheme) {
+        return savedTheme === 'dark';
+      }
+      
+      if (window.matchMedia) {
+        return window.matchMedia('(prefers-color-scheme: dark)').matches;
+      }
+    }
+    return false; // Default to light mode
+  });
   
   // Debug state - for development only
   const [debugMode, setDebugMode] = useState(false);
@@ -334,10 +347,26 @@ const App = () => {
         
         const shouldUseDark = savedTheme === 'dark' || (!savedTheme && systemPrefersDark);
         debugLog('Setting dark mode to', shouldUseDark);
+        
+        // Apply dark mode class immediately to prevent FOUC
+        if (shouldUseDark) {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+        
         setDarkMode(shouldUseDark);
       } else if (savedTheme) {
         const shouldUseDark = savedTheme === 'dark';
         debugLog('Setting dark mode from localStorage', shouldUseDark);
+        
+        // Apply dark mode class immediately to prevent FOUC
+        if (shouldUseDark) {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+        
         setDarkMode(shouldUseDark);
       }
     }
@@ -1132,11 +1161,11 @@ const App = () => {
     if (typeof window !== 'undefined') {
       if (darkMode) {
         document.documentElement.classList.add('dark');
-        localStorage.setItem('theme', 'dark');
       } else {
         document.documentElement.classList.remove('dark');
-        localStorage.setItem('theme', 'light');
       }
+      // Save to localStorage whenever darkMode changes
+      localStorage.setItem('theme', darkMode ? 'dark' : 'light');
     }
   }, [darkMode]);
 
@@ -1408,7 +1437,18 @@ const App = () => {
 
   // Toggle dark mode
   const toggleDarkMode = () => {
-    setDarkMode(!darkMode);
+    const newDarkMode = !darkMode;
+    setDarkMode(newDarkMode);
+    
+    if (typeof window !== 'undefined') {
+      if (newDarkMode) {
+        document.documentElement.classList.add('dark');
+        localStorage.setItem('theme', 'dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+        localStorage.setItem('theme', 'light');
+      }
+    }
   };
 
   // Create a new train

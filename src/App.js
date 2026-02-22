@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { Moon, Sun } from 'lucide-react';
-import { Copy, Plus, QrCode } from 'lucide-react';
+import { Copy, Plus, QrCode, Globe } from 'lucide-react';
 import { supabase, createSecureSupabaseClient } from './supabaseClient';
 import QRCode from 'react-qr-code';
 import LegalPage from './LegalPage';
+import i18n from './i18n';
 
 // Footer component
 const Footer = () => (
@@ -98,15 +99,20 @@ const createSmartLink = (platform, username) => {
   };
 };
 
-// Function to handle link click with fallback
-const handleLinkClick = (smartLink) => {
+// Function to handle link click with fallback and analytics
+const handleLinkClick = (smartLink, platform, participantId) => {
   if (!smartLink) return;
-  
+    
+  // Log the social click analytics
+  if (participantId && trainId) {
+    logSocialClick(participantId, platform);
+  }
+    
   if (smartLink.isDeepLink && smartLink.fallback) {
     // For deep links with fallback, try deep link and fall back to web
     const startTime = Date.now();
     window.location.href = smartLink.url;
-    
+      
     // Fallback to web URL if deep link fails
     setTimeout(() => {
       if (Date.now() - startTime < 2000) { // 2 second threshold
@@ -119,21 +125,241 @@ const handleLinkClick = (smartLink) => {
   }
 };
 
+// Function to log profile view analytics
+const logProfileView = async (participantId) => {
+  if (!participantId || !trainId) return;
+    
+  try {
+    await supabase
+      .rpc('log_analytics', {
+        p_train_id: trainId,
+        p_participant_id: participantId,
+        p_metric_type: 'profile_view',
+        p_platform: null
+      });
+  } catch (error) {
+    console.error('Error logging profile view:', error);
+    // Don't fail the view if logging fails
+  }
+};
+
+// Function to log social link click analytics
+const logSocialClick = async (participantId, platform) => {
+  if (!participantId || !trainId || !platform) return;
+    
+  try {
+    await supabase
+      .rpc('log_analytics', {
+        p_train_id: trainId,
+        p_participant_id: participantId,
+        p_metric_type: 'social_click',
+        p_platform: platform
+      });
+  } catch (error) {
+    console.error('Error logging social click:', error);
+    // Don't fail the click if logging fails
+  }
+};
+
 const App = () => {
   console.log('App component mounted');
   
   const [darkMode, setDarkMode] = useState(false); // Default to false initially
   
+  // Debug state - for development only
+  const [debugMode, setDebugMode] = useState(false);
+  const [debugLogs, setDebugLogs] = useState([]);
+  const [debugInfo, setDebugInfo] = useState({});
+  
+  // Language state
+  const [currentLanguage, setCurrentLanguage] = useState(i18n.currentLanguage);
+  const [showLanguageSelector, setShowLanguageSelector] = useState(false);
+  
+  // PWA state
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
+  const [showInstallButton, setShowInstallButton] = useState(false);
+  
+  // Debug logging function
+  const debugLog = (message, data = null) => {
+    if (!debugMode) return;
+    
+    const logEntry = {
+      timestamp: new Date().toISOString(),
+      message,
+      data
+    };
+    
+    console.log('[DEBUG]', message, data);
+    setDebugLogs(prev => [...prev.slice(-49), logEntry]); // Keep last 50 logs
+    
+    // Update debug info
+    setDebugInfo(prev => ({
+      ...prev,
+      [message]: data || true
+    }));
+  };
+  
+  // Language change function
+  const changeLanguage = (langCode) => {
+    debugLog('Changing language', langCode);
+    
+    if (i18n.setLanguage(langCode)) {
+      setCurrentLanguage(langCode);
+      debugLog('Language changed successfully', langCode);
+      
+      // Update document title
+      document.title = i18n.t('appTitle');
+    } else {
+      debugLog('Failed to change language', langCode);
+    }
+  };
+  
+  // Language selector component
+  const LanguageSelector = () => {
+    if (!showLanguageSelector) return null;
+    
+    const languages = i18n.getAvailableLanguages();
+    
+    return (
+      <div className="fixed top-4 right-4 w-48 bg-white bg-opacity-95 backdrop-blur-sm rounded-lg shadow-lg p-3 z-40 border border-gray-200">
+        <div className="flex justify-between items-center mb-2">
+          <span className="font-medium text-gray-800 text-sm">{i18n.t('language') || 'Language'}</span>
+          <button 
+            onClick={() => setShowLanguageSelector(false)}
+            className="text-gray-500 hover:text-gray-700"
+          >
+            ✕
+          </button>
+        </div>
+        
+        <div className="space-y-1">
+          {languages.map((lang) => (
+            <button
+              key={lang.code}
+              onClick={() => {
+                changeLanguage(lang.code);
+                setShowLanguageSelector(false);
+              }}
+              className={`w-full text-left px-2 py-1 rounded text-sm transition-colors ${
+                currentLanguage === lang.code
+                  ? 'bg-blue-100 text-blue-800 font-medium'
+                  : 'hover:bg-gray-100 text-gray-700'
+              }`}
+            >
+              {lang.name}
+              {currentLanguage === lang.code && (
+                <span className="ml-2">✓</span>
+              )}
+            </button>
+          ))}
+        </div>
+        
+        <div className="mt-2 pt-2 border-t border-gray-200">
+          <button
+            onClick={() => {
+              if (i18n.debugMode) {
+                i18n.disableDebug();
+              } else {
+                i18n.enableDebug();
+              }
+              debugLog('i18n debug mode toggled', !i18n.debugMode);
+            }}
+            className="w-full text-left px-2 py-1 text-xs text-gray-500 hover:text-gray-700 hover:bg-gray-50 rounded"
+          >
+            {i18n.debugMode ? 'Disable i18n Debug' : 'Enable i18n Debug'}
+          </button>
+        </div>
+      </div>
+    );
+  };
+  
+  // Add debug info updates
+  useEffect(() => {
+    debugLog('Current state update', { 
+      currentLanguage, 
+      debugMode,
+      trainId,
+      participants: participants.length 
+    });
+    
+    // Update debug info
+    setDebugInfo(prev => ({
+      ...prev,
+      language: currentLanguage,
+      trainId: trainId || 'none',
+      participants: participants.length,
+      theme: `${trainTheme.primaryColor}/${trainTheme.secondaryColor}`,
+      i18n_debug: i18n.debugMode,
+      i18n_logs: i18n.getDebugInfo()?.debugLogs?.length || 0
+    }));
+  }, [currentLanguage, debugMode, trainId, participants.length, trainTheme]);
+  
+  // Debug panel component
+  const DebugPanel = () => {
+    if (!debugMode) return null;
+    
+    return (
+      <div className="fixed bottom-4 right-4 w-96 h-80 bg-black bg-opacity-90 text-green-400 text-xs font-mono p-3 rounded-lg z-50 border border-green-400 overflow-hidden">
+        <div className="flex justify-between items-center mb-2">
+          <span className="font-bold">DEBUG PANEL</span>
+          <button 
+            onClick={() => setDebugMode(false)}
+            className="text-red-400 hover:text-red-300"
+          >
+            ✕
+          </button>
+        </div>
+        
+        <div className="mb-3">
+          <div className="text-yellow-400 font-bold mb-1">DEBUG INFO:</div>
+          <div className="space-y-1 max-h-20 overflow-y-auto">
+            {Object.entries(debugInfo).map(([key, value]) => (
+              <div key={key} className="flex">
+                <span className="text-blue-400 w-24 truncate">{key}:</span>
+                <span className="text-white truncate">{JSON.stringify(value).substring(0, 30)}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+        
+        <div>
+          <div className="text-yellow-400 font-bold mb-1">LOGS:</div>
+          <div className="space-y-1 max-h-32 overflow-y-auto">
+            {debugLogs.map((log, index) => (
+              <div key={index} className="text-white">
+                <span className="text-gray-400">{log.timestamp.split('T')[1].split('.')[0]}</span>
+                <span> {log.message}</span>
+                {log.data && (
+                  <span className="text-gray-300"> {JSON.stringify(log.data).substring(0, 50)}</span>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  };
+  
   // Set the initial dark mode after component mounts
   useEffect(() => {
+    debugLog('Initializing app...');
+    
     if (typeof window !== 'undefined') {
       const savedTheme = localStorage.getItem('theme');
+      debugLog('Saved theme from localStorage', savedTheme);
+      
       if (window.matchMedia) {
         const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        debugLog('System prefers dark mode', systemPrefersDark);
+        
         const shouldUseDark = savedTheme === 'dark' || (!savedTheme && systemPrefersDark);
+        debugLog('Setting dark mode to', shouldUseDark);
         setDarkMode(shouldUseDark);
       } else if (savedTheme) {
-        setDarkMode(savedTheme === 'dark');
+        const shouldUseDark = savedTheme === 'dark';
+        debugLog('Setting dark mode from localStorage', shouldUseDark);
+        setDarkMode(shouldUseDark);
       }
     }
   }, []); // Run once after mount
@@ -147,6 +373,185 @@ const App = () => {
     
     return () => clearInterval(interval);
   }, []);
+  
+  // PWA Installation setup
+  useEffect(() => {
+    debugLog('Setting up PWA features...');
+    
+    // Check if service worker is supported
+    if ('serviceWorker' in navigator) {
+      debugLog('Service Worker supported');
+      
+      // Register service worker
+      navigator.serviceWorker.register('/service-worker.js')
+        .then((registration) => {
+          debugLog('Service Worker registered successfully', registration.scope);
+          
+          // Listen for updates
+          registration.addEventListener('updatefound', () => {
+            debugLog('New service worker found');
+            const newWorker = registration.installing;
+            newWorker.addEventListener('statechange', () => {
+              debugLog('Service worker state changed', newWorker.state);
+            });
+          });
+        })
+        .catch((error) => {
+          debugLog('Service Worker registration failed', error);
+        });
+      
+      // Listen for controller change
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        debugLog('Controller changed');
+        window.location.reload();
+      });
+    }
+    
+    // Listen for beforeinstallprompt event
+    const handleBeforeInstallPrompt = (e) => {
+      debugLog('Before install prompt fired');
+      e.preventDefault();
+      setDeferredPrompt(e);
+      setShowInstallButton(true);
+    };
+    
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    
+    // Listen for appinstalled event
+    const handleAppInstalled = () => {
+      debugLog('App installed successfully');
+      setShowInstallButton(false);
+      setDeferredPrompt(null);
+    };
+    
+    window.addEventListener('appinstalled', handleAppInstalled);
+    
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      window.removeEventListener('appinstalled', handleAppInstalled);
+    };
+  }, []);
+  
+  // Online/offline status tracking
+  useEffect(() => {
+    const handleOnline = () => {
+      debugLog('Browser came online');
+      setIsOnline(true);
+    };
+    
+    const handleOffline = () => {
+      debugLog('Browser went offline');
+      setIsOnline(false);
+    };
+    
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
+  
+  // Handle service worker messages
+  useEffect(() => {
+    const handleMessage = (event) => {
+      debugLog('Message from service worker:', event.data);
+      
+      if (event.data?.type === 'CONNECTION_RESTORED') {
+        setIsOnline(true);
+        // Show notification or update UI
+        alert(event.data.message);
+      }
+    };
+    
+    navigator.serviceWorker.addEventListener('message', handleMessage);
+    
+    return () => {
+      navigator.serviceWorker.removeEventListener('message', handleMessage);
+    };
+  }, []);
+  
+  // PWA Installation function
+  const installPWA = async () => {
+    debugLog('Attempting PWA installation');
+    
+    if (!deferredPrompt) {
+      debugLog('No installation prompt available');
+      return;
+    }
+    
+    // Show the install prompt
+    deferredPrompt.prompt();
+    
+    // Wait for the user to respond to the prompt
+    const { outcome } = await deferredPrompt.userChoice;
+    debugLog('User response to install prompt:', outcome);
+    
+    // Clear the prompt since it can't be used again
+    setDeferredPrompt(null);
+    setShowInstallButton(false);
+    
+    if (outcome === 'accepted') {
+      debugLog('User accepted the install prompt');
+    } else {
+      debugLog('User dismissed the install prompt');
+    }
+  };
+  
+  // Update service worker
+  const updateServiceWorker = async () => {
+    debugLog('Checking for service worker updates');
+    
+    if ('serviceWorker' in navigator) {
+      const registration = await navigator.serviceWorker.getRegistration();
+      if (registration && registration.waiting) {
+        debugLog('Updating service worker');
+        registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+        window.location.reload();
+      }
+    }
+  };
+  
+  // PWA Status component
+  const PWAStatus = () => {
+    return (
+      <div className="fixed bottom-4 left-4 flex flex-col gap-2 z-20">
+        {/* Online/Offline Status */}
+        <div 
+          className={`px-3 py-1 rounded-full text-xs font-medium flex items-center gap-2 ${
+            isOnline 
+              ? 'bg-green-500 text-white' 
+              : 'bg-red-500 text-white'
+          }`}
+        >
+          <div className={`w-2 h-2 rounded-full ${isOnline ? 'bg-white' : 'bg-white'}`} />
+          {isOnline ? 'Online' : 'Offline'}
+        </div>
+        
+        {/* Install Button */}
+        {showInstallButton && (
+          <button
+            onClick={installPWA}
+            className="px-3 py-1 bg-blue-500 text-white rounded-full text-xs font-medium hover:bg-blue-600 transition-colors flex items-center gap-1"
+          >
+            <span>📱</span>
+            Install App
+          </button>
+        )}
+        
+        {/* Update Button (for debug) */}
+        {debugMode && (
+          <button
+            onClick={updateServiceWorker}
+            className="px-3 py-1 bg-yellow-500 text-white rounded-full text-xs font-medium hover:bg-yellow-600 transition-colors"
+          >
+            Update SW
+          </button>
+        )}
+      </div>
+    );
+  };
   
   // Optimize loading by deferring non-critical operations
   useEffect(() => {
@@ -190,6 +595,254 @@ const App = () => {
   const [participants, setParticipants] = useState([]);
   const [showJoinModal, setShowJoinModal] = useState(false);
   const [showQRModal, setShowQRModal] = useState(false);
+  const [showActivityFeed, setShowActivityFeed] = useState(false); // Toggle activity feed visibility
+  const [activities, setActivities] = useState([]); // Store activity logs
+  const [analytics, setAnalytics] = useState({}); // Store analytics data
+  const [showThemePanel, setShowThemePanel] = useState(false); // Toggle theme customization panel
+  const [trainTheme, setTrainTheme] = useState({
+    primaryColor: '#8b5cf6', // purple-500
+    secondaryColor: '#ec4899', // pink-500
+    backgroundColor: '#f9fafb', // gray-50
+    textColor: '#1f2937', // gray-800
+    cardColor: '#ffffff', // white
+    accentColor: '#6366f1' // indigo-500
+  });
+
+  // Theme Customization Component
+  const ThemeCustomizer = () => {
+    if (!showThemePanel) return null;
+    
+    const themePresets = [
+      { name: 'Default Purple', colors: { primary: '#8b5cf6', secondary: '#ec4899', background: '#f9fafb', text: '#1f2937', card: '#ffffff', accent: '#6366f1' } },
+      { name: 'Ocean Blue', colors: { primary: '#0ea5e9', secondary: '#06b6d4', background: '#f0f9ff', text: '#0f172a', card: '#ffffff', accent: '#0284c7' } },
+      { name: 'Forest Green', colors: { primary: '#10b981', secondary: '#34d399', background: '#f0fdf4', text: '#065f46', card: '#ffffff', accent: '#059669' } },
+      { name: 'Sunset Orange', colors: { primary: '#f97316', secondary: '#fb923c', background: '#fff7ed', text: '#7c2d12', card: '#ffffff', accent: '#ea580c' } },
+      { name: 'Midnight Dark', colors: { primary: '#6366f1', secondary: '#8b5cf6', background: '#0f172a', text: '#f1f5f9', card: '#1e293b', accent: '#4f46e5' } }
+    ];
+    
+    const updateTheme = (newTheme) => {
+      setTrainTheme({
+        primaryColor: newTheme.primary,
+        secondaryColor: newTheme.secondary,
+        backgroundColor: newTheme.background,
+        textColor: newTheme.text,
+        cardColor: newTheme.card,
+        accentColor: newTheme.accent
+      });
+    };
+    
+    return (
+      <div className="max-w-4xl mx-auto p-4 mt-4 bg-white border border-gray-200 rounded-xl shadow-sm dark:bg-gray-800 dark:border-gray-700">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-bold text-gray-800 dark:text-white">Theme Customization</h3>
+          <button 
+            onClick={() => setShowThemePanel(false)}
+            className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+          >
+            ✕
+          </button>
+        </div>
+        
+        <div className="mb-6">
+          <h4 className="font-medium text-gray-700 mb-3 dark:text-gray-300">Theme Presets</h4>
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+            {themePresets.map((preset, index) => (
+              <button
+                key={index}
+                onClick={() => updateTheme(preset.colors)}
+                className="p-3 rounded-lg border-2 border-gray-200 hover:border-gray-400 transition-colors text-center"
+                style={{
+                  backgroundColor: preset.colors.card,
+                  color: preset.colors.text
+                }}
+              >
+                <div 
+                  className="w-8 h-8 rounded-full mx-auto mb-2"
+                  style={{
+                    background: `linear-gradient(135deg, ${preset.colors.primary}, ${preset.colors.secondary})`
+                  }}
+                />
+                <span className="text-xs font-medium">{preset.name}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+        
+        <div>
+          <h4 className="font-medium text-gray-700 mb-3 dark:text-gray-300">Custom Colors</h4>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-gray-300">Primary</label>
+              <input
+                type="color"
+                value={trainTheme.primaryColor}
+                onChange={(e) => setTrainTheme({...trainTheme, primaryColor: e.target.value})}
+                className="w-full h-10 rounded border border-gray-300 cursor-pointer"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-gray-300">Secondary</label>
+              <input
+                type="color"
+                value={trainTheme.secondaryColor}
+                onChange={(e) => setTrainTheme({...trainTheme, secondaryColor: e.target.value})}
+                className="w-full h-10 rounded border border-gray-300 cursor-pointer"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-gray-300">Accent</label>
+              <input
+                type="color"
+                value={trainTheme.accentColor}
+                onChange={(e) => setTrainTheme({...trainTheme, accentColor: e.target.value})}
+                className="w-full h-10 rounded border border-gray-300 cursor-pointer"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-gray-300">Background</label>
+              <input
+                type="color"
+                value={trainTheme.backgroundColor}
+                onChange={(e) => setTrainTheme({...trainTheme, backgroundColor: e.target.value})}
+                className="w-full h-10 rounded border border-gray-300 cursor-pointer"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-gray-300">Text</label>
+              <input
+                type="color"
+                value={trainTheme.textColor}
+                onChange={(e) => setTrainTheme({...trainTheme, textColor: e.target.value})}
+                className="w-full h-10 rounded border border-gray-300 cursor-pointer"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-gray-300">Card</label>
+              <input
+                type="color"
+                value={trainTheme.cardColor}
+                onChange={(e) => setTrainTheme({...trainTheme, cardColor: e.target.value})}
+                className="w-full h-10 rounded border border-gray-300 cursor-pointer"
+              />
+            </div>
+          </div>
+        </div>
+        
+        <div className="mt-6 p-4 bg-gray-50 rounded-lg dark:bg-gray-700">
+          <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">Preview:</p>
+          <div 
+            className="p-3 rounded-lg"
+            style={{
+              backgroundColor: trainTheme.cardColor,
+              color: trainTheme.textColor,
+              border: `1px solid ${trainTheme.primaryColor}`
+            }}
+          >
+            <div className="flex items-center gap-2 mb-2">
+              <div 
+                className="w-8 h-8 rounded-full"
+                style={{
+                  background: `linear-gradient(135deg, ${trainTheme.primaryColor}, ${trainTheme.secondaryColor})`
+                }}
+              />
+              <span className="font-medium">Sample Card</span>
+            </div>
+            <p className="text-sm">This is how your train will look with these colors.</p>
+            <button 
+              className="mt-2 px-3 py-1 rounded text-sm font-medium transition-colors"
+              style={{
+                backgroundColor: trainTheme.accentColor,
+                color: 'white'
+              }}
+            >
+              Action Button
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // Activity Feed Component
+  const ActivityFeed = () => {
+    const getActivityIcon = (actionType) => {
+      switch (actionType) {
+        case 'join': return '👥';
+        case 'leave': return '👋';
+        case 'update': return '✏️';
+        case 'lock': return '🔒';
+        case 'unlock': return '🔓';
+        default: return '📝';
+      }
+    };
+
+    const getActivityMessage = (activity) => {
+      const participantName = activity.participant?.display_name || 'Unknown';
+      const timeAgo = formatTimeAgo(new Date(activity.created_at));
+      
+      switch (activity.action_type) {
+        case 'join':
+          return `${participantName} joined the train`;
+        case 'leave':
+          return `${participantName} left the train`;
+        case 'update':
+          return `${participantName} updated their profile`;
+        case 'lock':
+          return `Train was locked by ${participantName}`;
+        case 'unlock':
+          return `Train was unlocked by ${participantName}`;
+        default:
+          return `${participantName} performed an action`;
+      }
+    };
+
+    const formatTimeAgo = (date) => {
+      const seconds = Math.floor((new Date() - date) / 1000);
+      
+      if (seconds < 60) return 'just now';
+      if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
+      if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
+      return `${Math.floor(seconds / 86400)}d ago`;
+    };
+
+    if (!showActivityFeed) return null;
+
+    return (
+      <div className="max-w-4xl mx-auto p-4 mt-4 bg-white border border-gray-200 rounded-xl shadow-sm dark:bg-gray-800 dark:border-gray-700">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-bold text-gray-800 dark:text-white">Activity Feed</h3>
+          <button 
+            onClick={() => setShowActivityFeed(false)}
+            className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+          >
+            ✕
+          </button>
+        </div>
+        
+        {activities.length === 0 ? (
+          <p className="text-gray-500 text-center py-8 dark:text-gray-400">
+            No activity yet. Join the train to see activity!
+          </p>
+        ) : (
+          <div className="space-y-3 max-h-96 overflow-y-auto">
+            {activities.map((activity) => (
+              <div key={activity.id} className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg dark:bg-gray-700">
+                <div className="text-2xl">{getActivityIcon(activity.action_type)}</div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-gray-800 dark:text-gray-200">
+                    {getActivityMessage(activity)}
+                  </p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    {formatTimeAgo(new Date(activity.created_at))}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
   const [editingParticipantId, setEditingParticipantId] = useState(null); // Track which participant is being edited
   const [editFormData, setEditFormData] = useState({
     displayName: '',
@@ -323,20 +976,31 @@ const App = () => {
 
   // Extract train ID or debug flag from URL on initial load
   useEffect(() => {
+    debugLog('Parsing URL parameters...');
+    
     const urlParams = new URLSearchParams(window.location.search);
     const trainParam = urlParams.get('train');
     const path = window.location.pathname;
     
+    debugLog('URL params', { trainParam, path });
+    
     if (path === '/debug') {
+      debugLog('Debug mode activated via URL');
+      setDebugMode(true);
       setCurrentView('debug');
     } else if (path === '/terms' || path === '/privacy') {
+      debugLog('Legal page route detected', path);
       // Let React Router handle these paths - don't set currentView
       return;
     } else if (trainParam) {
+      debugLog('Train parameter found', trainParam.toUpperCase());
       setTrainId(trainParam.toUpperCase());
       setCurrentView('train');
     } else if (path === '/' || path === '') {
+      debugLog('Home page route detected');
       setCurrentView('home');
+    } else {
+      debugLog('Unknown route', path);
     }
   }, []);
 
@@ -366,7 +1030,7 @@ const App = () => {
     
     fetchTrainStatus();
 
-    const channel = supabase
+    const participantsChannel = supabase
       .channel(`participants:${trainId}`)
       .on(
         'postgres_changes',
@@ -410,8 +1074,78 @@ const App = () => {
       )
       .subscribe();
 
+    // Subscribe to real-time activity updates
+    const activityChannel = supabase
+      .channel(`activity:${trainId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'activity_log',
+          filter: `train_id=eq.${trainId}`
+        },
+        (payload) => {
+          // Fetch the participant name for the new activity
+          supabase
+            .from('participants')
+            .select('display_name')
+            .eq('id', payload.new.participant_id)
+            .single()
+            .then(({ data }) => {
+              const activityWithParticipant = {
+                ...payload.new,
+                participant: { display_name: data?.display_name || 'Unknown' }
+              };
+              setActivities(prev => [activityWithParticipant, ...prev]);
+            });
+        }
+      )
+      .subscribe();
+
+    // Subscribe to real-time analytics updates
+    const analyticsChannel = supabase
+      .channel(`analytics:${trainId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'analytics',
+          filter: `train_id=eq.${trainId}`
+        },
+        (payload) => {
+          // Update analytics state in real-time
+          setAnalytics(prev => {
+            const newAnalytics = { ...prev };
+            const participantId = payload.new.participant_id;
+            
+            if (!newAnalytics[participantId]) {
+              newAnalytics[participantId] = {
+                profileViews: 0,
+                socialClicks: {}
+              };
+            }
+            
+            if (payload.new.metric_type === 'profile_view') {
+              newAnalytics[participantId].profileViews += 1;
+            } else if (payload.new.metric_type === 'social_click') {
+              if (!newAnalytics[participantId].socialClicks[payload.new.platform]) {
+                newAnalytics[participantId].socialClicks[payload.new.platform] = 0;
+              }
+              newAnalytics[participantId].socialClicks[payload.new.platform] += 1;
+            }
+            
+            return newAnalytics;
+          });
+        }
+      )
+      .subscribe();
+
     return () => {
-      supabase.removeChannel(channel);
+      supabase.removeChannel(participantsChannel);
+      supabase.removeChannel(activityChannel);
+      supabase.removeChannel(analyticsChannel);
     };
   }, [trainId]);
 
@@ -430,9 +1164,16 @@ const App = () => {
 
   // Load participants when trainId changes
   useEffect(() => {
-    if (!trainId) return;
+    if (!trainId) {
+      debugLog('No trainId, skipping participant load');
+      return;
+    }
+
+    debugLog('Loading participants for train', trainId);
 
     const fetchParticipants = async () => {
+      debugLog('Fetching participants from Supabase...');
+      
       const { data, error } = await supabase
         .from('participants')
         .select('*')
@@ -440,13 +1181,80 @@ const App = () => {
         .order('joined_at', { ascending: true });
 
       if (error) {
+        debugLog('Error fetching participants', error);
         console.error('Error fetching participants:', error);
       } else {
+        debugLog('Participants loaded successfully', { count: data?.length || 0, data });
         setParticipants(data || []);
       }
     };
 
     fetchParticipants();
+  }, [trainId]);
+
+  // Load activity logs when trainId changes
+  useEffect(() => {
+    if (!trainId) return;
+
+    const fetchActivities = async () => {
+      const { data, error } = await supabase
+        .from('activity_log')
+        .select(`
+          *,
+          participant:participants(display_name)
+        `)
+        .eq('train_id', trainId)
+        .order('created_at', { ascending: false })
+        .limit(50); // Limit to last 50 activities
+
+      if (error) {
+        console.error('Error fetching activities:', error);
+      } else {
+        setActivities(data || []);
+      }
+    };
+
+    fetchActivities();
+  }, [trainId]);
+
+  // Load analytics when trainId changes
+  useEffect(() => {
+    if (!trainId) return;
+
+    const fetchAnalytics = async () => {
+      const { data, error } = await supabase
+        .from('analytics')
+        .select('*')
+        .eq('train_id', trainId);
+
+      if (error) {
+        console.error('Error fetching analytics:', error);
+      } else {
+        // Process analytics data into a more usable format
+        const processedAnalytics = {};
+        data.forEach(item => {
+          if (!processedAnalytics[item.participant_id]) {
+            processedAnalytics[item.participant_id] = {
+              profileViews: 0,
+              socialClicks: {}
+            };
+          }
+          
+          if (item.metric_type === 'profile_view') {
+            processedAnalytics[item.participant_id].profileViews += 1;
+          } else if (item.metric_type === 'social_click') {
+            if (!processedAnalytics[item.participant_id].socialClicks[item.platform]) {
+              processedAnalytics[item.participant_id].socialClicks[item.platform] = 0;
+            }
+            processedAnalytics[item.participant_id].socialClicks[item.platform] += 1;
+          }
+        });
+        
+        setAnalytics(processedAnalytics);
+      }
+    };
+
+    fetchAnalytics();
   }, [trainId]);
 
   // Validate usernames for different platforms
@@ -972,15 +1780,31 @@ const App = () => {
 
     console.log('Joining participant data:', joinParticipantData);
 
-    const { error: participantError } = await supabase
+    const { data: participantData, error: participantError } = await supabase
       .from('participants')
-      .insert([joinParticipantData]);
+      .insert([joinParticipantData])
+      .select()
+      .single();
 
     if (participantError) {
       console.error('Join participant error:', participantError);
       setError(`Failed to join train: ${participantError.message || 'Please try again.'}`);
       setLoading(false);
       return;
+    }
+
+    // Log the join activity
+    try {
+      await supabase
+        .rpc('log_activity', {
+          p_train_id: trainId,
+          p_participant_id: participantData.id,
+          p_action_type: 'join',
+          p_action_details: null
+        });
+    } catch (logError) {
+      console.error('Error logging activity:', logError);
+      // Don't fail the join if logging fails
     }
 
     // Close modal and reset form
@@ -1017,6 +1841,24 @@ const App = () => {
       
       setTrainLocked(!trainLocked);
       console.log('Train lock status updated to:', !trainLocked);
+      
+      // Log the lock/unlock activity
+      try {
+        // Find the host participant to get their ID for logging
+        const hostParticipant = participants.find(p => p.is_host === true);
+        if (hostParticipant) {
+          await supabase
+            .rpc('log_activity', {
+              p_train_id: trainId,
+              p_participant_id: hostParticipant.id,
+              p_action_type: !trainLocked ? 'unlock' : 'lock',
+              p_action_details: null
+            });
+        }
+      } catch (logError) {
+        console.error('Error logging activity:', logError);
+        // Don't fail the lock operation if logging fails
+      }
     } catch (err) {
       console.error('Error in toggleTrainLock:', err);
       setError('Failed to update train lock status');
@@ -1044,6 +1886,24 @@ const App = () => {
       
       console.log('User kicked successfully');
       // The participant list will update via real-time subscription
+      
+      // Log the leave activity
+      try {
+        // Find the host participant to get their ID for logging
+        const hostParticipant = participants.find(p => p.is_host === true);
+        if (hostParticipant) {
+          await supabase
+            .rpc('log_activity', {
+              p_train_id: trainId,
+              p_participant_id: userId, // The kicked user
+              p_action_type: 'leave',
+              p_action_details: { kicked_by: hostParticipant.id }
+            });
+        }
+      } catch (logError) {
+        console.error('Error logging activity:', logError);
+        // Don't fail the kick operation if logging fails
+      }
     } catch (err) {
       console.error('Error in kickUser:', err);
       setError('Failed to remove user from train');
@@ -1208,6 +2068,20 @@ const App = () => {
         console.error('Error updating participant:', error);
         setError(`Failed to update entry: ${error.message}`);
         return;
+      }
+
+      // Log the update activity
+      try {
+        await supabase
+          .rpc('log_activity', {
+            p_train_id: trainId,
+            p_participant_id: participantId,
+            p_action_type: 'update',
+            p_action_details: null
+          });
+      } catch (logError) {
+        console.error('Error logging activity:', logError);
+        // Don't fail the update if logging fails
       }
       
       // Update local state
@@ -1479,8 +2353,8 @@ const App = () => {
             {darkMode ? " Light" : " Dark"}
           </button>
         </div>
-        <h1 className="text-4xl font-bold text-gray-800 mb-2 dark:text-white">FollowTrain</h1>
-        <p className="text-gray-600 mb-1 dark:text-gray-300">Share and follow each other on all social media platforms</p>
+        <h1 className="text-4xl font-bold text-gray-800 mb-2 dark:text-white">{i18n.t('appTitle')}</h1>
+        <p className="text-gray-600 mb-1 dark:text-gray-300">{i18n.t('appDescription')}</p>
         <p className="text-gray-500 text-sm mb-8 dark:text-gray-400">No login required. Fast, easy, and safe!</p>
         {error && (
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4 dark:bg-red-900 dark:border-red-700 dark:text-red-200">
@@ -1496,7 +2370,7 @@ const App = () => {
             }}
             className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-lg font-medium hover:opacity-90 transition-opacity w-full"
           >
-            Create a Train
+            {i18n.t('createTrain')}
           </button>
           
           <div className="relative py-4">
@@ -1837,14 +2711,37 @@ const App = () => {
   const renderTrainView = () => {
     if (!trainId) return null;
 
+    debugLog('Rendering train view', { trainId, participantsCount: participants.length });
+
     return (
-      <div className="min-h-screen bg-gradient-to-b from-purple-500 to-pink-500 dark:from-gray-800 dark:to-gray-900">
+      <div 
+        className="min-h-screen"
+        style={{
+          background: `linear-gradient(180deg, ${trainTheme.primaryColor}, ${trainTheme.secondaryColor})`
+        }}
+      >
         {/* Header */}
-        <div className="bg-white shadow-md p-4 dark:bg-gray-800 dark:text-white">
+        <div 
+          className="shadow-md p-4"
+          style={{
+            backgroundColor: trainTheme.cardColor,
+            color: trainTheme.textColor
+          }}
+        >
           <div className="max-w-4xl mx-auto flex flex-col sm:flex-row justify-between items-center">
             <div>
-              <h1 className="text-xl font-bold text-gray-800 dark:text-white">{trainName || `Train ${trainId}`}</h1>
-              <p className="text-gray-600 text-sm dark:text-gray-300">{participants.length} participant{participants.length !== 1 ? 's' : ''}</p>
+              <h1 
+                className="text-xl font-bold"
+                style={{ color: trainTheme.textColor }}
+              >
+                {trainName || `Train ${trainId}`}
+              </h1>
+              <p 
+                className="text-sm"
+                style={{ color: `${trainTheme.textColor}80` }} // 50% opacity
+              >
+                {participants.length} participant{participants.length !== 1 ? 's' : ''}
+              </p>
             </div>
             <div className="flex gap-2 mt-2 sm:mt-0">
               <button
@@ -1884,12 +2781,30 @@ const App = () => {
                 <Copy size={16} />
                 Export Options
               </button>
+              <button
+                onClick={() => setShowActivityFeed(!showActivityFeed)}
+                className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors"
+              >
+                📋 Activity
+              </button>
+              <button
+                onClick={() => setShowThemePanel(!showThemePanel)}
+                className="flex items-center gap-2 bg-teal-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-teal-700 transition-colors"
+              >
+                🎨 Theme
+              </button>
               
 
             </div>
           </div>
         </div>
 
+        {/* Activity Feed */}
+        <ActivityFeed />
+        
+        {/* Theme Customizer */}
+        <ThemeCustomizer />
+        
         {/* Export Panel */}
         {showExportPanel && (
           <div className="max-w-4xl mx-auto p-4 mt-4 bg-blue-50 border border-blue-200 rounded-xl dark:bg-blue-900/20 dark:border-blue-700">
@@ -1969,8 +2884,15 @@ const App = () => {
               <div
                 key={participant.id}
                 className="block"
+                onClick={() => logProfileView(participant.id)}
               >
-                <div className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow h-full dark:bg-gray-700">
+                <div 
+                  className="rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow h-full"
+                  style={{
+                    backgroundColor: trainTheme.cardColor,
+                    color: trainTheme.textColor
+                  }}
+                >
                   <div className="p-4">
                     <div className="flex items-center mb-3">
                       <img
@@ -1983,9 +2905,20 @@ const App = () => {
                         }}
                       />
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-gray-800 truncate dark:text-white">{participant.display_name}</h3>
+                        <h3 
+                          className="font-semibold truncate"
+                          style={{ color: trainTheme.textColor }}
+                        >
+                          {participant.display_name}
+                        </h3>
                         {participant.is_host && (
-                          <span className="inline-block bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded-full mt-1 dark:bg-purple-900 dark:text-purple-100">
+                          <span 
+                            className="inline-block text-xs px-2 py-1 rounded-full mt-1"
+                            style={{
+                              backgroundColor: `${trainTheme.primaryColor}20`, // 12% opacity
+                              color: trainTheme.primaryColor
+                            }}
+                          >
                             Host
                           </span>
                         )}
@@ -2168,15 +3101,24 @@ const App = () => {
                       // Display mode
                       <div className="space-y-1 mb-3">
                         {participant.instagram_username && (
-                          <div className="flex items-center text-sm dark:text-gray-300">
-                            <span className="font-medium text-gray-700 w-20 dark:text-gray-400">Instagram:</span>
+                          <div 
+                            className="flex items-center text-sm"
+                            style={{ color: `${trainTheme.textColor}cc` }} // 80% opacity
+                          >
+                            <span 
+                              className="font-medium w-20"
+                              style={{ color: `${trainTheme.textColor}cc` }} // 80% opacity
+                            >
+                              Instagram:
+                            </span>
                             <button
                               onClick={(e) => {
                                 e.preventDefault();
                                 const smartLink = createSmartLink('instagram', participant.instagram_username);
-                                handleLinkClick(smartLink);
+                                handleLinkClick(smartLink, 'instagram', participant.id);
                               }}
-                              className="text-purple-600 truncate hover:underline cursor-pointer bg-transparent border-none p-0 font-inherit text-left"
+                              className="truncate hover:underline cursor-pointer bg-transparent border-none p-0 font-inherit text-left"
+                              style={{ color: trainTheme.accentColor }}
                             >
                               @{participant.instagram_username}
                             </button>
@@ -2189,9 +3131,10 @@ const App = () => {
                               onClick={(e) => {
                                 e.preventDefault();
                                 const smartLink = createSmartLink('tiktok', participant.tiktok_username);
-                                handleLinkClick(smartLink);
+                                handleLinkClick(smartLink, 'tiktok', participant.id);
                               }}
-                              className="text-purple-600 truncate hover:underline cursor-pointer bg-transparent border-none p-0 font-inherit text-left dark:text-purple-400"
+                              className="truncate hover:underline cursor-pointer bg-transparent border-none p-0 font-inherit text-left"
+                              style={{ color: trainTheme.accentColor }}
                             >
                               @{participant.tiktok_username}
                             </button>
@@ -2204,9 +3147,10 @@ const App = () => {
                               onClick={(e) => {
                                 e.preventDefault();
                                 const smartLink = createSmartLink('twitter', participant.twitter_username);
-                                handleLinkClick(smartLink);
+                                handleLinkClick(smartLink, 'twitter', participant.id);
                               }}
-                              className="text-purple-600 truncate hover:underline cursor-pointer bg-transparent border-none p-0 font-inherit text-left dark:text-purple-400"
+                              className="truncate hover:underline cursor-pointer bg-transparent border-none p-0 font-inherit text-left"
+                              style={{ color: trainTheme.accentColor }}
                             >
                               @{participant.twitter_username}
                             </button>
@@ -2218,10 +3162,13 @@ const App = () => {
                             <button
                               onClick={(e) => {
                                 e.preventDefault();
+                                // Log the LinkedIn click analytics
+                                logSocialClick(participant.id, 'linkedin');
                                 // For LinkedIn URLs, open directly in new tab
                                 window.open(participant.linkedin_username, '_blank');
                               }}
-                              className="text-purple-600 truncate hover:underline cursor-pointer bg-transparent border-none p-0 font-inherit text-left dark:text-purple-400"
+                              className="truncate hover:underline cursor-pointer bg-transparent border-none p-0 font-inherit text-left"
+                              style={{ color: trainTheme.accentColor }}
                             >
                               {participant.linkedin_username.replace('https://', '').replace('www.', '').split('/')[2] || 'Profile'}
                             </button>
@@ -2234,9 +3181,10 @@ const App = () => {
                               onClick={(e) => {
                                 e.preventDefault();
                                 const smartLink = createSmartLink('youtube', participant.youtube_username);
-                                handleLinkClick(smartLink);
+                                handleLinkClick(smartLink, 'youtube', participant.id);
                               }}
-                              className="text-purple-600 truncate hover:underline cursor-pointer bg-transparent border-none p-0 font-inherit text-left dark:text-purple-400"
+                              className="truncate hover:underline cursor-pointer bg-transparent border-none p-0 font-inherit text-left"
+                              style={{ color: trainTheme.accentColor }}
                             >
                               @{participant.youtube_username}
                             </button>
@@ -2249,9 +3197,10 @@ const App = () => {
                               onClick={(e) => {
                                 e.preventDefault();
                                 const smartLink = createSmartLink('twitch', participant.twitch_username);
-                                handleLinkClick(smartLink);
+                                handleLinkClick(smartLink, 'twitch', participant.id);
                               }}
-                              className="text-purple-600 truncate hover:underline cursor-pointer bg-transparent border-none p-0 font-inherit text-left dark:text-purple-400"
+                              className="truncate hover:underline cursor-pointer bg-transparent border-none p-0 font-inherit text-left"
+                              style={{ color: trainTheme.accentColor }}
                             >
                               @{participant.twitch_username}
                             </button>
@@ -2267,7 +3216,12 @@ const App = () => {
                     ) : (
                       // Display mode
                       participant.bio && (
-                        <p className="text-gray-600 text-sm dark:text-gray-300">{participant.bio}</p>
+                        <p 
+                          className="text-sm"
+                          style={{ color: `${trainTheme.textColor}b3` }} // 70% opacity
+                        >
+                          {participant.bio}
+                        </p>
                       )
                     )}
                   </div>
@@ -2806,6 +3760,8 @@ const App = () => {
   };
 
   // Main render
+  debugLog('Main render', { currentView, trainId, debugMode, participantsCount: participants.length });
+  
   return (
     <div className="font-sans">
       <Routes>
@@ -2825,6 +3781,27 @@ const App = () => {
         {/* Catch all route - redirect to home for unknown paths */}
         <Route path="*" element={<CatchAllRoute />} />
       </Routes>
+      
+      {/* Debug Panel - always render but conditionally display */}
+      <DebugPanel />
+      
+      {/* Language Selector - always render but conditionally display */}
+      <LanguageSelector />
+      
+      {/* Language Toggle Button */}
+      <button
+        onClick={() => setShowLanguageSelector(!showLanguageSelector)}
+        className="fixed top-4 left-4 p-2 bg-white bg-opacity-80 backdrop-blur-sm rounded-full shadow-lg hover:bg-opacity-100 transition-all z-30"
+        title={i18n.t('language') || 'Language'}
+      >
+        <Globe size={20} className="text-gray-700" />
+        <span className="absolute -top-1 -right-1 w-4 h-4 bg-blue-500 text-white text-xs rounded-full flex items-center justify-center">
+          {currentLanguage.toUpperCase()}
+        </span>
+      </button>
+      
+      {/* PWA Status Panel */}
+      <PWAStatus />
     </div>
   );
 };

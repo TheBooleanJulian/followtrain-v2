@@ -1,4 +1,4 @@
--- FollowTrain Supabase Schema - Idempotent Version with Activity Feed
+-- FollowTrain Supabase Schema - With Activity Feed
 -- Safe to run multiple times - will not error if tables already exist
 
 -- Ensure tables exist (safe to run even if they already exist)
@@ -180,7 +180,6 @@ CREATE POLICY "Allow users to update own entries" ON public.participants
     (is_host = true AND admin_token = current_setting('request.headers', true)::json->>'x-admin-token')
     OR
     -- Or they're updating their own record (self-edit)
-    -- Check if the header exists and the participant ID matches
     (
       current_setting('request.headers', true)::json IS NOT NULL
       AND (current_setting('request.headers', true)::json->>'x-participant-id') IS NOT NULL
@@ -203,7 +202,6 @@ CREATE POLICY "Allow hosts to remove participants" ON public.participants
 -- Allow users to delete their own entries
 CREATE POLICY "Allow users to delete own entries" ON public.participants
   FOR DELETE USING (
-    -- Check if the header exists and the participant ID matches
     (current_setting('request.headers', true)::json->>'x-participant-id') IS NOT NULL
     AND (current_setting('request.headers', true)::json->>'x-participant-id') != ''
     AND id::TEXT = (current_setting('request.headers', true)::json->>'x-participant-id')::TEXT

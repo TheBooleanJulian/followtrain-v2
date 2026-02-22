@@ -1,9 +1,7 @@
 {
-  "buildCommand": "npm run build",
+  "buildCommand": "GENERATE_SOURCEMAP=false npm run build",
   "outputDirectory": "build",
-  "env": {
-    "GENERATE_SOURCEMAP": "false"
-  },
+  "framework": "create-react-app",
   "routes": [
     {
       "src": "/static/js/(.*)",

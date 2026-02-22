@@ -100,12 +100,12 @@ const createSmartLink = (platform, username) => {
 };
 
 // Function to handle link click with fallback and analytics
-const handleLinkClick = (smartLink, platform, participantId) => {
+const handleLinkClick = (smartLink, platform, participantId, trainId) => {
   if (!smartLink) return;
     
   // Log the social click analytics
   if (participantId && trainId) {
-    logSocialClick(participantId, platform);
+    logSocialClick(participantId, platform, trainId);
   }
     
   if (smartLink.isDeepLink && smartLink.fallback) {
@@ -126,7 +126,7 @@ const handleLinkClick = (smartLink, platform, participantId) => {
 };
 
 // Function to log profile view analytics
-const logProfileView = async (participantId) => {
+const logProfileView = async (participantId, trainId) => {
   if (!participantId || !trainId) return;
     
   try {
@@ -144,7 +144,7 @@ const logProfileView = async (participantId) => {
 };
 
 // Function to log social link click analytics
-const logSocialClick = async (participantId, platform) => {
+const logSocialClick = async (participantId, platform, trainId) => {
   if (!participantId || !trainId || !platform) return;
     
   try {
@@ -2884,7 +2884,7 @@ const App = () => {
               <div
                 key={participant.id}
                 className="block"
-                onClick={() => logProfileView(participant.id)}
+                onClick={() => logProfileView(participant.id, trainId)}
               >
                 <div 
                   className="rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow h-full"
@@ -3115,7 +3115,7 @@ const App = () => {
                               onClick={(e) => {
                                 e.preventDefault();
                                 const smartLink = createSmartLink('instagram', participant.instagram_username);
-                                handleLinkClick(smartLink, 'instagram', participant.id);
+                                handleLinkClick(smartLink, 'instagram', participant.id, trainId);
                               }}
                               className="truncate hover:underline cursor-pointer bg-transparent border-none p-0 font-inherit text-left"
                               style={{ color: trainTheme.accentColor }}
@@ -3131,7 +3131,7 @@ const App = () => {
                               onClick={(e) => {
                                 e.preventDefault();
                                 const smartLink = createSmartLink('tiktok', participant.tiktok_username);
-                                handleLinkClick(smartLink, 'tiktok', participant.id);
+                                handleLinkClick(smartLink, 'tiktok', participant.id, trainId);
                               }}
                               className="truncate hover:underline cursor-pointer bg-transparent border-none p-0 font-inherit text-left"
                               style={{ color: trainTheme.accentColor }}
@@ -3147,7 +3147,7 @@ const App = () => {
                               onClick={(e) => {
                                 e.preventDefault();
                                 const smartLink = createSmartLink('twitter', participant.twitter_username);
-                                handleLinkClick(smartLink, 'twitter', participant.id);
+                                handleLinkClick(smartLink, 'twitter', participant.id, trainId);
                               }}
                               className="truncate hover:underline cursor-pointer bg-transparent border-none p-0 font-inherit text-left"
                               style={{ color: trainTheme.accentColor }}
@@ -3163,7 +3163,7 @@ const App = () => {
                               onClick={(e) => {
                                 e.preventDefault();
                                 // Log the LinkedIn click analytics
-                                logSocialClick(participant.id, 'linkedin');
+                                logSocialClick(participant.id, 'linkedin', trainId);
                                 // For LinkedIn URLs, open directly in new tab
                                 window.open(participant.linkedin_username, '_blank');
                               }}
@@ -3181,7 +3181,7 @@ const App = () => {
                               onClick={(e) => {
                                 e.preventDefault();
                                 const smartLink = createSmartLink('youtube', participant.youtube_username);
-                                handleLinkClick(smartLink, 'youtube', participant.id);
+                                handleLinkClick(smartLink, 'youtube', participant.id, trainId);
                               }}
                               className="truncate hover:underline cursor-pointer bg-transparent border-none p-0 font-inherit text-left"
                               style={{ color: trainTheme.accentColor }}
@@ -3197,7 +3197,7 @@ const App = () => {
                               onClick={(e) => {
                                 e.preventDefault();
                                 const smartLink = createSmartLink('twitch', participant.twitch_username);
-                                handleLinkClick(smartLink, 'twitch', participant.id);
+                                handleLinkClick(smartLink, 'twitch', participant.id, trainId);
                               }}
                               className="truncate hover:underline cursor-pointer bg-transparent border-none p-0 font-inherit text-left"
                               style={{ color: trainTheme.accentColor }}

@@ -1,0 +1,22 @@
+{
+  "short_name": "FollowTrain",
+  "name": "FollowTrain - Social Profile Sharing",
+  "description": "Share your social profiles with a group. No login required.",
+  "icons": [
+    {
+      "src": "/followtrain-icon.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/followtrain-icon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#8b5cf6",
+  "theme_color": "#8b5cf6",
+  "orientation": "portrait-primary"
+}

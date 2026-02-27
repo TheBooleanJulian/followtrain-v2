@@ -11,33 +11,33 @@ import i18n from './i18n';
 const Footer = () => (
   <div className="mt-8 pt-6 border-t border-gray-200 text-center text-sm text-gray-600 dark:text-gray-400">
     <p className="mb-2">
-      © 2026 TheBooleanJulian. All rights reserved.
+      © 2026 TheBooleanJulian. {i18n.t('allRightsReserved')}
     </p>
     <p>
-      Not affiliated with Meta, LinkedIn, X, or any listed platforms. |{' '}
+      {i18n.t('notAffiliated')} |{' '}
       <a 
         href="/terms" 
         className="text-purple-600 hover:underline dark:text-purple-400"
       >
-        Terms
+        {i18n.t('termsFooter')}
       </a> 
       |{' '}
       <a 
         href="/privacy" 
         className="text-purple-600 hover:underline dark:text-purple-400"
       >
-        Privacy
+        {i18n.t('privacyFooter')}
       </a>
     </p>
     <p className="mt-2">
-      Created by{' '}
+      {i18n.t('createdBy')}{' '}
       <a 
         href="https://github.com/TheBooleanJulian" 
         target="_blank" 
         rel="noopener noreferrer"
         className="text-purple-600 hover:underline dark:text-purple-400"
       >
-        TheBooleanJulian
+        {i18n.t('appTitle')}
       </a>
     </p>
   </div>
@@ -66,7 +66,9 @@ const createSmartLink = (platform, username) => {
     whatsapp: `whatsapp://send?phone=${username.replace('@', '')}`,
     telegram: `tg://resolve?domain=${username.replace('@', '')}`,
     discord: `https://discord.com/users/${username.replace('@', '')}`,
-    github: `github://user/${username.replace('@', '')}`
+    github: `github://user/${username.replace('@', '')}`,
+    wechat: `weixin://dl/chat/${username.replace('@', '')}`,
+    line: `line://ti/p/${username.replace('@', '')}`
   };
   
   // Define web URLs
@@ -81,7 +83,9 @@ const createSmartLink = (platform, username) => {
     whatsapp: `https://wa.me/${username.replace('@', '')}`,
     telegram: `https://t.me/${username.replace('@', '')}`,
     discord: `https://discord.com/users/${username.replace('@', '')}`,
-    github: `https://github.com/${username.replace('@', '')}`
+    github: `https://github.com/${username.replace('@', '')}`,
+    wechat: `https://wechat.com/${username.replace('@', '')}`,
+    line: `https://line.me/ti/p/${username.replace('@', '')}`
   };
   
   if (isMobile && deepLinks[platform]) {
@@ -192,6 +196,11 @@ const App = () => {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [showInstallButton, setShowInstallButton] = useState(false);
+  
+  // Function to generate a random admin token
+  const generateAdminToken = () => {
+    return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+  };
   
   // Debug logging function - wrapped in useCallback for stable reference
   const debugLog = useCallback((message, data = null) => {
@@ -616,19 +625,76 @@ const App = () => {
     accentColor: '#6366f1' // indigo-500
   });
 
+  // Define theme presets in the main component scope so they can be accessed by toggleThemeDarkMode
+  const themePresets = [
+    { name: 'Default Light', colors: { primary: '#8b5cf6', secondary: '#ec4899', background: '#ffffff', text: '#1f2937', card: '#f9fafb', accent: '#6366f1' }, darkColors: { primary: '#a78bfa', secondary: '#f472b6', background: '#1f2937', text: '#f9fafb', card: '#374151', accent: '#4b5563' } },
+    { name: 'Ocean Light', colors: { primary: '#3b82f6', secondary: '#06b6d4', background: '#ffffff', text: '#1f2937', card: '#f0f9ff', accent: '#0284c7' }, darkColors: { primary: '#60a5fa', secondary: '#22d3ee', background: '#1f2937', text: '#f0f9ff', card: '#1e3a8a', accent: '#1e40af' } },
+    { name: 'Forest Light', colors: { primary: '#10b981', secondary: '#8b5cf6', background: '#ffffff', text: '#1f2937', card: '#f0fdf4', accent: '#059669' }, darkColors: { primary: '#34d399', secondary: '#a78bfa', background: '#065f46', text: '#ecfdf5', card: '#047857', accent: '#059669' } },
+    { name: 'Grey Dark', colors: { primary: '#6b7280', secondary: '#9ca3af', background: '#111827', text: '#d1d5db', card: '#374151', accent: '#4b5563' }, darkColors: { primary: '#9ca3af', secondary: '#d1d5db', background: '#0f172a', text: '#f3f4f6', card: '#374151', accent: '#6b7280' } },
+    { name: 'True Black', colors: { primary: '#8b5cf6', secondary: '#ec4899', background: '#000000', text: '#ffffff', card: '#1f2937', accent: '#374151' }, darkColors: { primary: '#a78bfa', secondary: '#f472b6', background: '#000000', text: '#ffffff', card: '#1f2937', accent: '#374151' } }
+  ];
+  
+  // Function to toggle current theme between light and dark versions
+  const toggleThemeDarkMode = () => {
+    const newDarkMode = !darkMode;
+    setDarkMode(newDarkMode);
+    
+    // Try to find a matching theme preset and apply the opposite version
+    const findMatchingPreset = () => {
+      for (const preset of themePresets) {
+        // Check if current theme matches the light version of this preset
+        if (
+          Math.abs(parseInt(trainTheme.primaryColor.replace('#', ''), 16) - parseInt(preset.colors.primary.replace('#', ''), 16)) < 10 &&
+          Math.abs(parseInt(trainTheme.secondaryColor.replace('#', ''), 16) - parseInt(preset.colors.secondary.replace('#', ''), 16)) < 10
+        ) {
+          return newDarkMode ? preset.darkColors : preset.colors;
+        }
+        // Check if current theme matches the dark version of this preset
+        if (
+          Math.abs(parseInt(trainTheme.primaryColor.replace('#', ''), 16) - parseInt(preset.darkColors.primary.replace('#', ''), 16)) < 10 &&
+          Math.abs(parseInt(trainTheme.secondaryColor.replace('#', ''), 16) - parseInt(preset.darkColors.secondary.replace('#', ''), 16)) < 10
+        ) {
+          return newDarkMode ? preset.darkColors : preset.colors;
+        }
+      }
+      return null;
+    };
+    
+    const matchingTheme = findMatchingPreset();
+    if (matchingTheme) {
+      setTrainTheme({
+        primaryColor: matchingTheme.primary,
+        secondaryColor: matchingTheme.secondary,
+        backgroundColor: matchingTheme.background,
+        textColor: matchingTheme.text,
+        cardColor: matchingTheme.card,
+        accentColor: matchingTheme.accent
+      });
+    }
+    
+    if (typeof window !== 'undefined') {
+      if (newDarkMode) {
+        document.documentElement.classList.add('dark');
+        localStorage.setItem('theme', 'dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+        localStorage.setItem('theme', 'light');
+      }
+    }
+  };
+  
+  // Update the original toggleDarkMode function to use the new logic
+  const toggleDarkMode = () => {
+    toggleThemeDarkMode();
+  };
+  
   // Theme Customization Component
   const ThemeCustomizer = () => {
     if (!showThemePanel) return null;
     
-    const themePresets = [
-      { name: 'Default Purple', colors: { primary: '#8b5cf6', secondary: '#ec4899', background: '#f9fafb', text: '#1f2937', card: '#ffffff', accent: '#6366f1' } },
-      { name: 'Ocean Blue', colors: { primary: '#0ea5e9', secondary: '#06b6d4', background: '#f0f9ff', text: '#0f172a', card: '#ffffff', accent: '#0284c7' } },
-      { name: 'Forest Green', colors: { primary: '#10b981', secondary: '#34d399', background: '#f0fdf4', text: '#065f46', card: '#ffffff', accent: '#059669' } },
-      { name: 'Sunset Orange', colors: { primary: '#f97316', secondary: '#fb923c', background: '#fff7ed', text: '#7c2d12', card: '#ffffff', accent: '#ea580c' } },
-      { name: 'Midnight Dark', colors: { primary: '#6366f1', secondary: '#8b5cf6', background: '#0f172a', text: '#f1f5f9', card: '#1e293b', accent: '#4f46e5' } }
-    ];
+    // Use the themePresets defined in the main component scope
     
-    const updateTheme = (newTheme) => {
+    const updateTheme = (newTheme, isDark = darkMode) => {
       setTrainTheme({
         primaryColor: newTheme.primary,
         secondaryColor: newTheme.secondary,
@@ -637,6 +703,22 @@ const App = () => {
         cardColor: newTheme.card,
         accentColor: newTheme.accent
       });
+      
+      // Update dark mode if needed
+      if (darkMode !== isDark) {
+        const newDarkMode = isDark;
+        setDarkMode(newDarkMode);
+        
+        if (typeof window !== 'undefined') {
+          if (newDarkMode) {
+            document.documentElement.classList.add('dark');
+            localStorage.setItem('theme', 'dark');
+          } else {
+            document.documentElement.classList.remove('dark');
+            localStorage.setItem('theme', 'light');
+          }
+        }
+      }
     };
     
     return (
@@ -655,23 +737,41 @@ const App = () => {
           <h4 className="font-medium text-gray-700 mb-3 dark:text-gray-300">{i18n.t('themePresets')}</h4>
           <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
             {themePresets.map((preset, index) => (
-              <button
-                key={index}
-                onClick={() => updateTheme(preset.colors)}
-                className="p-3 rounded-lg border-2 border-gray-200 hover:border-gray-400 transition-colors text-center"
-                style={{
-                  backgroundColor: preset.colors.card,
-                  color: preset.colors.text
-                }}
-              >
-                <div 
-                  className="w-8 h-8 rounded-full mx-auto mb-2"
+              <div key={index} className="flex flex-col gap-1">
+                <button
+                  onClick={() => updateTheme(preset.colors, false)}
+                  className="p-2 rounded-lg border-2 border-gray-200 hover:border-gray-400 transition-colors text-center"
                   style={{
-                    background: `linear-gradient(135deg, ${preset.colors.primary}, ${preset.colors.secondary})`
+                    backgroundColor: preset.colors.card,
+                    color: preset.colors.text
                   }}
-                />
-                <span className="text-xs font-medium">{preset.name}</span>
-              </button>
+                >
+                  <div 
+                    className="w-6 h-6 rounded-full mx-auto mb-1"
+                    style={{
+                      background: `linear-gradient(135deg, ${preset.colors.primary}, ${preset.colors.secondary})`
+                    }}
+                  />
+                  <span className="text-xs">{i18n.t('light')}</span>
+                </button>
+                <button
+                  onClick={() => updateTheme(preset.darkColors, true)}
+                  className="p-2 rounded-lg border-2 border-gray-200 hover:border-gray-400 transition-colors text-center"
+                  style={{
+                    backgroundColor: preset.darkColors.card,
+                    color: preset.darkColors.text
+                  }}
+                >
+                  <div 
+                    className="w-6 h-6 rounded-full mx-auto mb-1"
+                    style={{
+                      background: `linear-gradient(135deg, ${preset.darkColors.primary}, ${preset.darkColors.secondary})`
+                    }}
+                  />
+                  <span className="text-xs">{i18n.t('dark')}</span>
+                </button>
+                <div className="text-xs text-center mt-1">{preset.name}</div>
+              </div>
             ))}
           </div>
         </div>
@@ -737,7 +837,7 @@ const App = () => {
         </div>
         
         <div className="mt-6 p-4 bg-gray-50 rounded-lg dark:bg-gray-700">
-          <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">Preview:</p>
+          <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">{i18n.t('preview')}</p>
           <div 
             className="p-3 rounded-lg"
             style={{
@@ -755,7 +855,7 @@ const App = () => {
               />
               <span className="font-medium">{i18n.t('sampleCard')}</span>
             </div>
-            <p className="text-sm">This is how your train will look with these colors.</p>
+            <p className="text-sm">{i18n.t('trainLookPreview')}</p>
             <button 
               className="mt-2 px-3 py-1 rounded text-sm font-medium transition-colors"
               style={{
@@ -948,6 +1048,8 @@ const App = () => {
     instagram: '',
     tiktok: '',
     twitter: '',
+    wechat: '',
+    line: '',
     linkedin: '',
     youtube: '',
     twitch: '',
@@ -980,6 +1082,7 @@ const App = () => {
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState('');
   const [guestTrainId, setGuestTrainId] = useState('');
+  const [isDemoTrain, setIsDemoTrain] = useState(false); // Track if current train is a demo
 
   // Extract train ID or debug flag from URL on initial load
   useEffect(() => {
@@ -1001,7 +1104,9 @@ const App = () => {
       return;
     } else if (trainParam) {
       debugLog('Train parameter found', trainParam.toUpperCase());
-      setTrainId(trainParam.toUpperCase());
+      const trainIdUpper = trainParam.toUpperCase();
+      setTrainId(trainIdUpper);
+      setIsDemoTrain(trainIdUpper.startsWith('DEMO')); // Mark as demo if ID starts with DEMO
       setCurrentView('train');
     } else if (path === '/' || path === '') {
       debugLog('Home page route detected');
@@ -1300,25 +1405,25 @@ const App = () => {
         // Instagram: alphanumeric, dots, underscores only, max 30 chars
         return /^[a-zA-Z0-9._]{1,30}$/.test(cleanUsername);
       case 'tiktok':
-        // TikTok: alphanumeric, dots, underscores, max 50 chars
+        // {i18n.t('tiktokLabel')}: alphanumeric, dots, underscores, max 50 chars
         return /^[a-zA-Z0-9._]{1,50}$/.test(cleanUsername);
       case 'twitter':
         // Twitter: alphanumeric, underscores, max 50 chars
         return /^[a-zA-Z0-9_]{1,50}$/.test(cleanUsername);
       case 'linkedin':
-        // LinkedIn URL validation
+        // {i18n.t('linkedinLabel')} URL validation
         return isValidUrl(username, 'linkedin');
       case 'youtube':
-        // YouTube: allow letters, numbers, spaces, dashes, underscores, max 100 chars
+        // {i18n.t('youtubeLabel')}: allow letters, numbers, spaces, dashes, underscores, max 100 chars
         return /^[a-zA-Z0-9 _-]{1,100}$/.test(cleanUsername);
       case 'twitch':
-        // Twitch: alphanumeric, underscores, max 50 chars
+        // {i18n.t('twitchLabel')}: alphanumeric, underscores, max 50 chars
         return /^[a-zA-Z0-9_]{1,50}$/.test(cleanUsername);
       case 'facebook':
         // Facebook: alphanumeric, dots, underscores, max 50 chars
         return /^[a-zA-Z0-9._]{1,50}$/.test(cleanUsername);
       case 'whatsapp':
-        // WhatsApp: phone number validation (10-15 digits)
+        // {i18n.t('whatsappLabel')}: phone number validation (10-15 digits)
         return /^[0-9]{10,15}$/.test(cleanUsername);
       case 'telegram':
         // Telegram: alphanumeric, underscores, max 32 chars
@@ -1327,8 +1432,14 @@ const App = () => {
         // Discord: typically 4-digit discriminator or user ID
         return /^[0-9]{4,20}$/.test(cleanUsername);
       case 'github':
-        // GitHub: alphanumeric, dashes, underscores, max 39 chars
+        // {i18n.t('githubLabel')}: alphanumeric, dashes, underscores, max 39 chars
         return /^[a-zA-Z0-9_-]{1,39}$/.test(cleanUsername);
+      case 'wechat':
+        // WeChat: alphanumeric, underscores, max 50 chars
+        return /^[a-zA-Z0-9_]{1,50}$/.test(cleanUsername);
+      case 'line':
+        // LINE: alphanumeric, underscores, max 50 chars
+        return /^[a-zA-Z0-9_]{1,50}$/.test(cleanUsername);
       default:
         return true;
     }
@@ -1363,7 +1474,7 @@ const App = () => {
     
     Object.keys(formData).forEach(key => {
       if (typeof formData[key] === 'string') {
-        // Special handling for LinkedIn URLs - don't over-sanitize URLs
+        // Special handling for {i18n.t('linkedinLabel')} URLs - don't over-sanitize URLs
         if (key === 'linkedin' && isValidUrl(formData[key], 'linkedin')) {
           sanitized[key] = sanitizeUrl(formData[key]); // Use existing URL sanitizer
         } else {
@@ -1377,7 +1488,7 @@ const App = () => {
     return sanitized;
   };
 
-  // Validate URL format for LinkedIn and Facebook
+  // Validate URL format for {i18n.t('linkedinLabel')} and Facebook
   const isValidUrl = (url, platform) => {
     if (!url.trim()) return true; // Empty is allowed
     
@@ -1435,22 +1546,8 @@ const App = () => {
     }
   };
 
-  // Toggle dark mode
-  const toggleDarkMode = () => {
-    const newDarkMode = !darkMode;
-    setDarkMode(newDarkMode);
-    
-    if (typeof window !== 'undefined') {
-      if (newDarkMode) {
-        document.documentElement.classList.add('dark');
-        localStorage.setItem('theme', 'dark');
-      } else {
-        document.documentElement.classList.remove('dark');
-        localStorage.setItem('theme', 'light');
-      }
-    }
-  };
 
+  
   // Create a new train
   const handleCreateTrain = async (e) => {
     e.preventDefault();
@@ -1486,9 +1583,9 @@ const App = () => {
     for (const platform of platforms) {
       if (sanitizedFormData[platform]) {
         if (platform === 'linkedin') {
-          // Special validation for LinkedIn URLs
+          // Special validation for {i18n.t('linkedinLabel')} URLs
           if (!isValidUrl(sanitizedFormData[platform], 'linkedin')) {
-            setError('Please enter a valid LinkedIn profile URL (e.g., https://linkedin.com/in/your-profile)');
+            setError('Please enter a valid ' + i18n.t('linkedinLabel') + ' profile URL (e.g., https://linkedin.com/in/your-profile)');
             setLoading(false);
             return;
           }
@@ -1602,7 +1699,7 @@ const App = () => {
       sanitizedFormData.displayName
     );
 
-    // Sanitize LinkedIn URL if provided
+    // Sanitize {i18n.t('linkedinLabel')} URL if provided
     const sanitizedLinkedin = sanitizedFormData.linkedin ? sanitizeUrl(sanitizedFormData.linkedin) : null;
     
     // Insert host participant with sanitized data
@@ -1612,6 +1709,8 @@ const App = () => {
       instagram_username: sanitizedFormData.instagram ? sanitizedFormData.instagram.replace(/^@/, '').toLowerCase() : null,
       tiktok_username: sanitizedFormData.tiktok ? sanitizedFormData.tiktok.replace(/^@/, '').toLowerCase() : null,
       twitter_username: sanitizedFormData.twitter ? sanitizedFormData.twitter.replace(/^@/, '').toLowerCase() : null,
+      wechat_username: sanitizedFormData.wechat ? sanitizedFormData.wechat.replace(/^@/, '').toLowerCase() : null,
+      line_username: sanitizedFormData.line ? sanitizedFormData.line.replace(/^@/, '').toLowerCase() : null,
       linkedin_username: sanitizedLinkedin,
       youtube_username: sanitizedFormData.youtube ? sanitizedFormData.youtube.replace(/^@/, '').toLowerCase() : null,
       twitch_username: sanitizedFormData.twitch ? sanitizedFormData.twitch.replace(/^@/, '').toLowerCase() : null,
@@ -1664,6 +1763,156 @@ const App = () => {
     setLoading(false);
   };
 
+  // Reset demo train state
+  const resetDemoTrain = () => {
+    setTrainId(null);
+    setTrainName('');
+    setIsAdmin(false);
+    setAdminToken(null);
+    setIsDemoTrain(false);
+    setCurrentView('home');
+    setParticipants([]);
+    setActivities([]);
+    setTrainLocked(false);
+    console.log('Demo train reset to home view');
+  };
+  
+  // Create a demo train with sample data
+  const createDemoTrain = async () => {
+    setLoading(true);
+    setError('');
+    
+    try {
+      // Generate a unique ID for the demo train
+      const demoTrainId = 'DEMO' + Math.random().toString(36).substring(2, 6).toUpperCase();
+      const demoAdminToken = Math.random().toString(36).substring(2, 10).toUpperCase() + 
+                            Math.random().toString(36).substring(2, 10).toUpperCase();
+      
+      // Create demo train data with infinite expiry
+      const trainData = {
+        id: demoTrainId,
+        name: 'Demo Train - Try FollowTrain!',
+        locked: false,
+        // Set expires_at to far future for demo (infinite)
+        expires_at: new Date(Date.now() + 100 * 365 * 24 * 60 * 60 * 1000).toISOString() // 100 years from now
+      };
+      
+      // Create the train
+      const { data: trainResult, error: trainError } = await supabase
+        .from('trains')
+        .insert([trainData])
+        .select()
+        .single();
+      
+      if (trainError) {
+        console.error('Demo train creation error:', trainError);
+        setError(`Failed to create demo train: ${trainError.message}`);
+        setLoading(false);
+        return;
+      }
+      
+      // Create sample participants for the demo
+      const sampleParticipants = [
+        {
+          train_id: demoTrainId,
+          display_name: 'Alex Chen',
+          instagram_username: 'alex_chen_photography',
+          tiktok_username: 'alexchen_tiktok',
+          twitter_username: 'alexchen_dev',
+          linkedin_username: 'https://linkedin.com/in/alexchen',
+          youtube_username: 'AlexChenTech',
+          twitch_username: 'alexchen_gaming',
+          facebook_username: 'https://facebook.com/alex.chen.profile',
+          whatsapp_number: '+1234567890',
+          telegram_username: 'alexchen_tg',
+          discord_id: 'alexchen#1234',
+          github_username: 'alexchen-dev',
+          bio: 'Software developer and content creator',
+          is_host: true,
+          admin_token: demoAdminToken,
+          avatar_url: 'https://ui-avatars.com/api/?name=Alex+Chen&size=48&background=random'
+        },
+        {
+          train_id: demoTrainId,
+          display_name: 'Sarah Johnson',
+          instagram_username: 'sarah_j_fitness',
+          tiktok_username: 'sarahj_fitlife',
+          twitter_username: 'sarahj_tweets',
+          linkedin_username: 'https://linkedin.com/in/sarahjohnson',
+          youtube_username: 'SarahJFitness',
+          twitch_username: 'sarahj_streaming',
+          facebook_username: 'https://facebook.com/sarah.johnson.profile',
+          whatsapp_number: '+1987654321',
+          telegram_username: 'sarahj_tg',
+          discord_id: 'sarahj#5678',
+          github_username: 'sarahj-dev',
+          bio: 'Fitness coach and lifestyle blogger',
+          is_host: false,
+          avatar_url: 'https://ui-avatars.com/api/?name=Sarah+Johnson&size=48&background=random'
+        },
+        {
+          train_id: demoTrainId,
+          display_name: 'Mike Rodriguez',
+          instagram_username: 'mikerod_art',
+          tiktok_username: 'mikerod_creates',
+          twitter_username: 'mikerod_artist',
+          linkedin_username: 'https://linkedin.com/in/mikerodriguez',
+          youtube_username: 'MikeRodArt',
+          twitch_username: 'mikerod_streaming',
+          facebook_username: 'https://facebook.com/mike.rodriguez.profile',
+          whatsapp_number: '+1555123456',
+          telegram_username: 'mikerod_tg',
+          discord_id: 'mikerod#9012',
+          github_username: 'mikerod-dev',
+          bio: 'Digital artist and streamer',
+          is_host: false,
+          avatar_url: 'https://ui-avatars.com/api/?name=Mike+Rodriguez&size=48&background=random'
+        }
+      ];
+      
+      // Insert sample participants
+      const { error: participantsError } = await supabase
+        .from('participants')
+        .insert(sampleParticipants);
+      
+      if (participantsError) {
+        console.error('Demo participants creation error:', participantsError);
+        // Don't fail completely if participants fail, the train is still useful
+      }
+      
+      // Log demo activity
+      const { error: activityError } = await supabase
+        .from('activity_log')
+        .insert([
+          {
+            train_id: demoTrainId,
+            action_type: 'join',
+            action_details: { message: 'Demo train created with sample participants' }
+          }
+        ]);
+      
+      if (activityError) {
+        console.error('Demo activity log error:', activityError);
+      }
+      
+      // Update state and redirect to demo train
+      setTrainId(demoTrainId);
+      setTrainName('Demo Train - Try FollowTrain!');
+      setIsAdmin(true);
+      setAdminToken(demoAdminToken);
+      setIsDemoTrain(true); // Mark as demo train
+      setCurrentView('train');
+      setLoading(false);
+      
+      console.log('Demo train created successfully:', demoTrainId);
+      
+    } catch (err) {
+      console.error('Error creating demo train:', err);
+      setError('Failed to create demo train. Please try again.');
+      setLoading(false);
+    }
+  };
+  
   // Function to generate avatar URL with fallback
   const generateAvatarUrl = async (primaryPlatform, primaryHandle, displayName) => {
     // If no primary platform is selected, use display name only
@@ -1735,13 +1984,13 @@ const App = () => {
     }
     
     // Validate additional platforms
-    const platforms = ['instagram', 'tiktok', 'twitter', 'linkedin', 'youtube', 'twitch', 'facebook', 'whatsapp', 'telegram', 'discord', 'github'];
+    const platforms = ['instagram', 'tiktok', 'twitter', 'wechat', 'line', 'linkedin', 'youtube', 'twitch', 'facebook', 'whatsapp', 'telegram', 'discord', 'github'];
     for (const platform of platforms) {
       if (sanitizedJoinData[platform]) {
         if (platform === 'linkedin') {
-          // Special validation for LinkedIn URLs
+          // Special validation for {i18n.t('linkedinLabel')} URLs
           if (!isValidUrl(sanitizedJoinData[platform], 'linkedin')) {
-            setError('Please enter a valid LinkedIn profile URL (e.g., https://linkedin.com/in/your-profile)');
+            setError('Please enter a valid ' + i18n.t('linkedinLabel') + ' profile URL (e.g., https://linkedin.com/in/your-profile)');
             setLoading(false);
             return;
           }
@@ -1802,8 +2051,11 @@ const App = () => {
     );
 
     // Insert participant with sanitized data
-    // Sanitize LinkedIn URL if provided
+    // Sanitize {i18n.t('linkedinLabel')} URL if provided
     const sanitizedLinkedin = sanitizedJoinData.linkedin ? sanitizeUrl(sanitizedJoinData.linkedin) : null;
+    
+    // Generate a unique admin token for the joining participant
+    const newJoinAdminToken = generateAdminToken();
     
     const joinParticipantData = {
       train_id: trainId,
@@ -1811,11 +2063,14 @@ const App = () => {
       instagram_username: sanitizedJoinData.instagram ? sanitizedJoinData.instagram.replace(/^@/, '').toLowerCase() : null,
       tiktok_username: sanitizedJoinData.tiktok ? sanitizedJoinData.tiktok.replace(/^@/, '').toLowerCase() : null,
       twitter_username: sanitizedJoinData.twitter ? sanitizedJoinData.twitter.replace(/^@/, '').toLowerCase() : null,
+      wechat_username: sanitizedJoinData.wechat ? sanitizedJoinData.wechat.replace(/^@/, '').toLowerCase() : null,
+      line_username: sanitizedJoinData.line ? sanitizedJoinData.line.replace(/^@/, '').toLowerCase() : null,
       linkedin_username: sanitizedLinkedin,
       youtube_username: sanitizedJoinData.youtube ? sanitizedJoinData.youtube.replace(/^@/, '').toLowerCase() : null,
       twitch_username: sanitizedJoinData.twitch ? sanitizedJoinData.twitch.replace(/^@/, '').toLowerCase() : null,
       bio: sanitizedJoinData.bio,
       is_host: false,
+      admin_token: newJoinAdminToken,
       avatar_url: avatarUrl
     };
 
@@ -1847,7 +2102,11 @@ const App = () => {
       console.error('Error logging activity:', logError);
       // Don't fail the join if logging fails
     }
-
+    
+    // Store the admin token for this participant and update state
+    setAdminToken(newJoinAdminToken);
+    localStorage.setItem(`followtrain_admin_${trainId}`, newJoinAdminToken);
+    
     // Close modal and reset form
     setShowJoinModal(false);
     setJoinFormData({ 
@@ -2020,6 +2279,8 @@ const App = () => {
       instagram: participant.instagram_username || '',
       tiktok: participant.tiktok_username || '',
       twitter: participant.twitter_username || '',
+      wechat: participant.wechat_username || '',
+      line: participant.line_username || '',
       linkedin: participant.linkedin_username || '',
       youtube: participant.youtube_username || '',
       twitch: participant.twitch_username || '',
@@ -2064,13 +2325,13 @@ const App = () => {
     }
     
     // Validate additional platforms
-    const platforms = ['instagram', 'tiktok', 'twitter', 'linkedin', 'youtube', 'twitch'];
+    const platforms = ['instagram', 'tiktok', 'twitter', 'wechat', 'line', 'linkedin', 'youtube', 'twitch', 'facebook', 'whatsapp', 'telegram', 'discord', 'github'];
     for (const platform of platforms) {
       if (sanitizedEditData[platform]) {
         if (platform === 'linkedin') {
-          // Special validation for LinkedIn URLs
+          // Special validation for {i18n.t('linkedinLabel')} URLs
           if (!isValidUrl(sanitizedEditData[platform], 'linkedin')) {
-            setError('Please enter a valid LinkedIn profile URL (e.g., https://linkedin.com/in/your-profile)');
+            setError('Please enter a valid ' + i18n.t('linkedinLabel') + ' profile URL (e.g., https://linkedin.com/in/your-profile)');
             return;
           }
         } else {
@@ -2084,7 +2345,7 @@ const App = () => {
     }
     
     try {
-      // Sanitize LinkedIn URL if provided
+      // Sanitize {i18n.t('linkedinLabel')} URL if provided
       const sanitizedLinkedin = sanitizedEditData.linkedin ? sanitizeUrl(sanitizedEditData.linkedin) : null;
       
       const updateData = {
@@ -2092,6 +2353,8 @@ const App = () => {
         instagram_username: sanitizedEditData.instagram ? sanitizedEditData.instagram.replace(/^@/, '').toLowerCase() : null,
         tiktok_username: sanitizedEditData.tiktok ? sanitizedEditData.tiktok.replace(/^@/, '').toLowerCase() : null,
         twitter_username: sanitizedEditData.twitter ? sanitizedEditData.twitter.replace(/^@/, '').toLowerCase() : null,
+        wechat_username: sanitizedEditData.wechat ? sanitizedEditData.wechat.replace(/^@/, '').toLowerCase() : null,
+        line_username: sanitizedEditData.line ? sanitizedEditData.line.replace(/^@/, '').toLowerCase() : null,
         linkedin_username: sanitizedLinkedin,
         youtube_username: sanitizedEditData.youtube ? sanitizedEditData.youtube.replace(/^@/, '').toLowerCase() : null,
         twitch_username: sanitizedEditData.twitch ? sanitizedEditData.twitch.replace(/^@/, '').toLowerCase() : null,
@@ -2134,6 +2397,8 @@ const App = () => {
               instagram_username: sanitizedEditData.instagram ? sanitizedEditData.instagram.replace(/^@/, '').toLowerCase() : null,
               tiktok_username: sanitizedEditData.tiktok ? sanitizedEditData.tiktok.replace(/^@/, '').toLowerCase() : null,
               twitter_username: sanitizedEditData.twitter ? sanitizedEditData.twitter.replace(/^@/, '').toLowerCase() : null,
+              wechat_username: sanitizedEditData.wechat ? sanitizedEditData.wechat.replace(/^@/, '').toLowerCase() : null,
+              line_username: sanitizedEditData.line ? sanitizedEditData.line.replace(/^@/, '').toLowerCase() : null,
               linkedin_username: sanitizedLinkedin,
               youtube_username: sanitizedEditData.youtube ? sanitizedEditData.youtube.replace(/^@/, '').toLowerCase() : null,
               twitch_username: sanitizedEditData.twitch ? sanitizedEditData.twitch.replace(/^@/, '').toLowerCase() : null,
@@ -2210,8 +2475,8 @@ const App = () => {
         return;
       }
       
-      // Check if train has expired
-      if (data.expires_at) {
+      // Check if train has expired (skip for demo trains)
+      if (data.expires_at && !isDemoTrain) {
         const expiryDate = new Date(data.expires_at);
         if (expiryDate < new Date()) {
           setError('This train has expired.');
@@ -2283,17 +2548,17 @@ const App = () => {
   
   const copyAllHandles = () => {
     const platformNames = {
-      instagram: 'Instagram',
-      tiktok: 'TikTok',
-      twitter: 'X/Twitter',
-      linkedin: 'LinkedIn',
-      youtube: 'YouTube',
-      twitch: 'Twitch',
-      facebook: 'Facebook',
-      whatsapp: 'WhatsApp',
-      telegram: 'Telegram',
-      discord: 'Discord',
-      github: 'GitHub'
+      instagram: i18n.t('instagramLabel'),
+      tiktok: i18n.t('tiktokLabel'),
+      twitter: i18n.t('twitterLabel'),
+      linkedin: i18n.t('linkedinLabel'),
+      youtube: i18n.t('youtubeLabel'),
+      twitch: i18n.t('twitchLabel'),
+      facebook: i18n.t('facebookLabel'),
+      whatsapp: i18n.t('whatsappLabel'),
+      telegram: i18n.t('telegramLabel'),
+      discord: i18n.t('discordLabel'),
+      github: i18n.t('githubLabel')
     };
     
     let exportText = `Train: ${trainName || trainId}\nParticipants: ${participants.length}\n\n`;
@@ -2325,17 +2590,17 @@ const App = () => {
   
   const exportToFile = (format = 'txt') => {
     const platformNames = {
-      instagram: 'Instagram',
-      tiktok: 'TikTok',
-      twitter: 'X/Twitter',
-      linkedin: 'LinkedIn',
-      youtube: 'YouTube',
-      twitch: 'Twitch',
-      facebook: 'Facebook',
-      whatsapp: 'WhatsApp',
-      telegram: 'Telegram',
-      discord: 'Discord',
-      github: 'GitHub'
+      instagram: i18n.t('instagramLabel'),
+      tiktok: i18n.t('tiktokLabel'),
+      twitter: i18n.t('twitterLabel'),
+      linkedin: i18n.t('linkedinLabel'),
+      youtube: i18n.t('youtubeLabel'),
+      twitch: i18n.t('twitchLabel'),
+      facebook: i18n.t('facebookLabel'),
+      whatsapp: i18n.t('whatsappLabel'),
+      telegram: i18n.t('telegramLabel'),
+      discord: i18n.t('discordLabel'),
+      github: i18n.t('githubLabel')
     };
     
     let content = `Train: ${trainName || trainId}\nParticipants: ${participants.length}\n\n`;
@@ -2396,7 +2661,7 @@ const App = () => {
         </div>
         <h1 className="text-4xl font-bold text-gray-800 mb-2 dark:text-white">{i18n.t('appTitle')}</h1>
         <p className="text-gray-600 mb-1 dark:text-gray-300">{i18n.t('appDescription')}</p>
-        <p className="text-gray-500 text-sm mb-8 dark:text-gray-400">No login required. Fast, easy, and safe!</p>
+        <p className="text-gray-500 text-sm mb-8 dark:text-gray-400">{i18n.t('noLoginRequired')}</p>
         {error && (
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4 dark:bg-red-900 dark:border-red-700 dark:text-red-200">
             {error}
@@ -2412,6 +2677,25 @@ const App = () => {
             className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-lg font-medium hover:opacity-90 transition-opacity w-full"
           >
             {i18n.t('createTrain')}
+          </button>
+          
+          {/* Demo Train Button */}
+          <button
+            onClick={createDemoTrain}
+            disabled={loading}
+            className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white px-6 py-3 rounded-lg font-medium hover:opacity-90 transition-opacity w-full flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {loading ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                Creating Demo...
+              </>
+            ) : (
+              <>
+                <span className="text-lg">🚀</span>
+                Quick Demo Train
+              </>
+            )}
           </button>
           
           <div className="relative py-4">
@@ -2437,7 +2721,7 @@ const App = () => {
               disabled={loading || !guestTrainId.trim()}
               className="w-full bg-gray-800 text-white px-6 py-3 rounded-lg font-medium hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed dark:bg-gray-600 dark:hover:bg-gray-500"
             >
-              {loading ? 'Joining...' : 'Join Train'}
+              {loading ? i18n.t('joining') : i18n.t('joinTrainButton')}
             </button>
           </form>
           
@@ -2455,7 +2739,7 @@ const App = () => {
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold text-gray-800 dark:text-white">{i18n.t('createTrain')}</h2>
           <button
-            onClick={toggleDarkMode}
+            onClick={toggleThemeDarkMode}
             className="bg-gray-200 text-gray-800 px-3 py-1 rounded-lg text-sm font-medium hover:bg-gray-300 transition-colors dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600"
             aria-label={darkMode ? "Switch to light mode" : "Switch to dark mode"}
           >
@@ -2473,7 +2757,7 @@ const App = () => {
         <form onSubmit={handleCreateTrain}>
           <div className="mb-4">
             <label className="block text-gray-700 text-sm font-medium mb-2" htmlFor="trainName">
-              Train Name *
+              {i18n.t('trainNameLabel')}
             </label>
             <input
               id="trainName"
@@ -2482,14 +2766,14 @@ const App = () => {
               onChange={(e) => setCreateFormData({...createFormData, trainName: e.target.value})}
               maxLength="50"
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-              placeholder="My Awesome Train"
+              placeholder={i18n.t('enterTrainName')}
               required
             />
           </div>
           
           <div className="mb-4">
             <label className="block text-gray-700 text-sm font-medium mb-2" htmlFor="displayName">
-              Your Display Name *
+              {i18n.t('displayNameLabel')}
             </label>
             <input
               id="displayName"
@@ -2497,7 +2781,7 @@ const App = () => {
               value={createFormData.displayName}
               onChange={(e) => setCreateFormData({...createFormData, displayName: e.target.value})}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white dark:border-gray-600"
-              placeholder="John Doe"
+              placeholder={i18n.t('enterDisplayName')}
               required
             />
           </div>
@@ -2514,13 +2798,13 @@ const App = () => {
                 className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white dark:border-gray-600"
                 required
               >
-                <option value="">Select Platform</option>
-                <option value="instagram">Instagram</option>
-                <option value="tiktok">TikTok</option>
-                <option value="twitter">X/Twitter</option>
-                <option value="youtube">YouTube</option>
-                <option value="twitch">Twitch</option>
-                <option value="linkedin">LinkedIn</option>
+                <option value="">{i18n.t('selectPlatform')}</option>
+                <option value="instagram">{i18n.t('instagram')}</option>
+                <option value="tiktok">{i18n.t('tiktok')}</option>
+                <option value="twitter">{i18n.t('twitter')}</option>
+                <option value="youtube">{i18n.t('youtube')}</option>
+                <option value="twitch">{i18n.t('twitch')}</option>
+                <option value="linkedin">{i18n.t('linkedin')}</option>
               </select>
               
               <input
@@ -2534,19 +2818,19 @@ const App = () => {
             </div>
             
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-              This will be used to generate your avatar
+              {i18n.t('generateAvatar')}
             </p>
           </div>
           
           <div className="mb-6">
             <label className="block text-gray-700 text-sm font-medium mb-3">
-              Optional Additional Links
+              {i18n.t('optionalAdditionalLinks')}
             </label>
             
             <div className="space-y-4">
               <div>
                 <label className="block text-gray-700 text-sm font-medium mb-1" htmlFor="instagram">
-                  Instagram Username
+                  {i18n.t('instagramUsername')}
                 </label>
                 <input
                   id="instagram"
@@ -2557,12 +2841,12 @@ const App = () => {
                   placeholder="@username"
                   maxLength="30"
                 />
-                <p className="text-xs text-gray-500 mt-1">Letters, numbers, dots, underscores (max 30 chars)</p>
+                <p className="text-xs text-gray-500 mt-1">{i18n.t('lettersNumbersDotsUnderscoresMax30Chars')}</p>
               </div>
               
               <div>
                 <label className="block text-gray-700 text-sm font-medium mb-1" htmlFor="tiktok">
-                  TikTok Username
+                  {i18n.t('tiktokUsername')}
                 </label>
                 <input
                   id="tiktok"
@@ -2573,12 +2857,12 @@ const App = () => {
                   placeholder="@username"
                   maxLength="50"
                 />
-                <p className="text-xs text-gray-500 mt-1">Letters, numbers, dots, underscores (max 50 chars)</p>
+                <p className="text-xs text-gray-500 mt-1">{i18n.t('lettersNumbersDotsUnderscoresMax50Chars')}</p>
               </div>
               
               <div>
                 <label className="block text-gray-700 text-sm font-medium mb-1" htmlFor="twitter">
-                  Twitter/X Username
+                  {i18n.t('twitterUsername')}
                 </label>
                 <input
                   id="twitter"
@@ -2589,12 +2873,12 @@ const App = () => {
                   placeholder="@username"
                   maxLength="50"
                 />
-                <p className="text-xs text-gray-500 mt-1">Letters, numbers, underscores (max 50 chars)</p>
+                <p className="text-xs text-gray-500 mt-1">{i18n.t('lettersNumbersUnderscoresMax50Chars')}</p>
               </div>
               
               <div>
                 <label className="block text-gray-700 text-sm font-medium mb-1" htmlFor="linkedin">
-                  LinkedIn Profile URL
+                  {i18n.t('linkedinLabel')} Profile URL
                 </label>
                 <input
                   id="linkedin"
@@ -2604,12 +2888,12 @@ const App = () => {
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white dark:border-gray-600"
                   placeholder="https://linkedin.com/in/your-profile"
                 />
-                <p className="text-xs text-gray-500 mt-1">Please paste your full profile link to ensure users find the correct page.</p>
+                <p className="text-xs text-gray-500 mt-1">{i18n.t('pasteFullProfileLink')}</p>
               </div>
               
               <div>
                 <label className="block text-gray-700 text-sm font-medium mb-1" htmlFor="youtube">
-                  YouTube Channel Name
+                  {i18n.t('youtubeLabel')} Channel Name
                 </label>
                 <input
                   id="youtube"
@@ -2619,7 +2903,7 @@ const App = () => {
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white dark:border-gray-600"
                   placeholder="channelname"
                 />
-                <p className="text-xs text-gray-500 mt-1">Letters, numbers only (max 100 chars)</p>
+                <p className="text-xs text-gray-500 mt-1">{i18n.t('lettersNumbersOnlyMax100Chars')}</p>
               </div>
               
               <div>
@@ -2634,7 +2918,7 @@ const App = () => {
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white dark:border-gray-600"
                   placeholder="@username"
                 />
-                <p className="text-xs text-gray-500 mt-1">Letters, numbers, underscores (max 50 chars)</p>
+                <p className="text-xs text-gray-500 mt-1">{i18n.t('lettersNumbersUnderscoresMax50Chars')}</p>
               </div>
               
               <div>
@@ -2649,12 +2933,12 @@ const App = () => {
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white dark:border-gray-600"
                   placeholder="https://facebook.com/your-profile"
                 />
-                <p className="text-xs text-gray-500 mt-1">Please paste your full profile link</p>
+                <p className="text-xs text-gray-500 mt-1">{i18n.t('pasteFullProfileLink2')}</p>
               </div>
               
               <div>
                 <label className="block text-gray-700 text-sm font-medium mb-1" htmlFor="whatsapp">
-                  WhatsApp Number
+                  {i18n.t('whatsappLabel')} Number
                 </label>
                 <input
                   id="whatsapp"
@@ -2664,7 +2948,7 @@ const App = () => {
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white dark:border-gray-600"
                   placeholder="+1234567890"
                 />
-                <p className="text-xs text-gray-500 mt-1">Include country code</p>
+                <p className="text-xs text-gray-500 mt-1">{i18n.t('includeCountryCode')}</p>
               </div>
               
               <div>
@@ -2697,7 +2981,7 @@ const App = () => {
               
               <div>
                 <label className="block text-gray-700 text-sm font-medium mb-1" htmlFor="github">
-                  GitHub Username
+                  {i18n.t('githubLabel')} Username
                 </label>
                 <input
                   id="github"
@@ -2707,6 +2991,38 @@ const App = () => {
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white dark:border-gray-600"
                   placeholder="@username"
                 />
+              </div>
+              
+              <div>
+                <label className="block text-gray-700 text-sm font-medium mb-1" htmlFor="wechat">
+                  {i18n.t('wechat')} Username
+                </label>
+                <input
+                  id="wechat"
+                  type="text"
+                  value={createFormData.wechat}
+                  onChange={(e) => setCreateFormData({...createFormData, wechat: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white dark:border-gray-600"
+                  placeholder="@username"
+                  maxLength="50"
+                />
+                <p className="text-xs text-gray-500 mt-1">{i18n.t('lettersNumbersUnderscoresMax50Chars')}</p>
+              </div>
+              
+              <div>
+                <label className="block text-gray-700 text-sm font-medium mb-1" htmlFor="line">
+                  {i18n.t('line')} ID
+                </label>
+                <input
+                  id="line"
+                  type="text"
+                  value={createFormData.line}
+                  onChange={(e) => setCreateFormData({...createFormData, line: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white dark:border-gray-600"
+                  placeholder="@lineid"
+                  maxLength="50"
+                />
+                <p className="text-xs text-gray-500 mt-1">{i18n.t('lettersNumbersUnderscoresMax50Chars')}</p>
               </div>
             </div>
           </div>
@@ -2722,7 +3038,7 @@ const App = () => {
               maxLength="100"
               rows="3"
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white dark:border-gray-600"
-              placeholder="Tell us about yourself..."
+              placeholder={i18n.t('tellUsAboutYourself')}
             />
           </div>
           
@@ -2761,6 +3077,19 @@ const App = () => {
           background: `linear-gradient(180deg, ${trainTheme.primaryColor}, ${trainTheme.secondaryColor})`
         }}
       >
+        {/* Demo Train Notice */}
+        {isDemoTrain && (
+          <div className="bg-blue-50 border-b border-blue-200 p-3 text-center dark:bg-blue-900 dark:border-blue-700">
+            <div className="max-w-4xl mx-auto flex items-center justify-center gap-2">
+              <span className="text-lg">🚀</span>
+              <p className="text-blue-800 font-medium dark:text-blue-100">
+                This is a demo train with sample data. Try joining, exploring profiles, and testing all features!
+              </p>
+              <span className="text-lg">🚀</span>
+            </div>
+          </div>
+        )}
+        
         {/* Header */}
         <div 
           className="shadow-md p-4"
@@ -2777,22 +3106,22 @@ const App = () => {
               >
                 {trainName || `Train ${trainId}`}
               </h1>
-              <p 
-                className="text-sm"
-                style={{ color: `${trainTheme.textColor}80` }} // 50% opacity
-              >
-                {participants.length} participant{participants.length !== 1 ? 's' : ''}
-              </p>
+              <div className="flex items-center gap-2">
+                <p 
+                  className="text-sm"
+                  style={{ color: `${trainTheme.textColor}80` }} // 50% opacity
+                >
+                  {participants.length} participant{participants.length !== 1 ? 's' : ''}
+                </p>
+                {isDemoTrain && (
+                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100">
+                    <span className="text-lg mr-1">🚀</span>
+                    Demo
+                  </span>
+                )}
+              </div>
             </div>
             <div className="flex gap-2 mt-2 sm:mt-0">
-              <button
-                onClick={toggleDarkMode}
-                className="flex items-center gap-2 bg-gray-200 text-gray-800 px-3 py-2 rounded-lg text-sm font-medium hover:bg-gray-300 transition-colors dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600"
-                aria-label={darkMode ? "Switch to light mode" : "Switch to dark mode"}
-              >
-                {darkMode ? <Sun size={16} /> : <Moon size={16} />}
-                {darkMode ? "Light" : "Dark"}
-              </button>
               <button
                 onClick={() => setShowQRModal(true)}
                 className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700 transition-colors dark:bg-green-700 dark:hover:bg-green-600"
@@ -2805,8 +3134,17 @@ const App = () => {
                 className="flex items-center gap-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:opacity-90 transition-opacity"
               >
                 <Copy size={16} />
-                {copied ? 'Copied!' : 'Copy Link'}
+                {copied ? i18n.t('copied') : i18n.t('copy')}
               </button>
+              {isDemoTrain && (
+                <button
+                  onClick={resetDemoTrain}
+                  className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+                >
+                  <span className="text-lg">🔄</span>
+                  Try Another Demo
+                </button>
+              )}
               {isAdmin && (
                 <button
                   onClick={() => setShowAdminPanel(!showAdminPanel)}
@@ -3002,7 +3340,7 @@ const App = () => {
                         </div>
                         
                         <div>
-                          <label className="block text-xs font-medium text-gray-700 mb-1 dark:text-gray-300">TikTok</label>
+                          <label className="block text-xs font-medium text-gray-700 mb-1 dark:text-gray-300">{i18n.t('tiktokLabel')}</label>
                           <input
                             type="text"
                             value={editFormData.tiktok}
@@ -3013,7 +3351,7 @@ const App = () => {
                         </div>
                         
                         <div>
-                          <label className="block text-xs font-medium text-gray-700 mb-1 dark:text-gray-300">Twitter</label>
+                          <label className="block text-xs font-medium text-gray-700 mb-1 dark:text-gray-300">{i18n.t('twitterLabel')}</label>
                           <input
                             type="text"
                             value={editFormData.twitter}
@@ -3024,7 +3362,7 @@ const App = () => {
                         </div>
                         
                         <div>
-                          <label className="block text-xs font-medium text-gray-700 mb-1 dark:text-gray-300">LinkedIn</label>
+                          <label className="block text-xs font-medium text-gray-700 mb-1 dark:text-gray-300">{i18n.t('linkedinLabel')}</label>
                           <input
                             type="text"
                             value={editFormData.linkedin}
@@ -3035,7 +3373,7 @@ const App = () => {
                         </div>
                         
                         <div>
-                          <label className="block text-xs font-medium text-gray-700 mb-1 dark:text-gray-300">YouTube</label>
+                          <label className="block text-xs font-medium text-gray-700 mb-1 dark:text-gray-300">{i18n.t('youtubeLabel')}</label>
                           <input
                             type="text"
                             value={editFormData.youtube}
@@ -3068,7 +3406,7 @@ const App = () => {
                         </div>
                         
                         <div>
-                          <label className="block text-xs font-medium text-gray-700 mb-1 dark:text-gray-300">WhatsApp</label>
+                          <label className="block text-xs font-medium text-gray-700 mb-1 dark:text-gray-300">{i18n.t('whatsappLabel')}</label>
                           <input
                             type="text"
                             value={editFormData.whatsapp}
@@ -3101,7 +3439,7 @@ const App = () => {
                         </div>
                         
                         <div>
-                          <label className="block text-xs font-medium text-gray-700 mb-1 dark:text-gray-300">GitHub</label>
+                          <label className="block text-xs font-medium text-gray-700 mb-1 dark:text-gray-300">{i18n.t('githubLabel')}</label>
                           <input
                             type="text"
                             value={editFormData.github}
@@ -3116,7 +3454,7 @@ const App = () => {
                           <textarea
                             value={editFormData.bio}
                             onChange={(e) => setEditFormData({...editFormData, bio: e.target.value})}
-                            placeholder="Tell us about yourself..."
+                            placeholder={i18n.t('tellUsAboutYourself')}
                             rows="2"
                             maxLength="100"
                             className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 dark:bg-gray-600 dark:text-white dark:border-gray-500"
@@ -3167,7 +3505,7 @@ const App = () => {
                         )}
                         {participant.tiktok_username && (
                           <div className="flex items-center text-sm dark:text-gray-300">
-                            <span className="font-medium text-gray-700 w-20 dark:text-gray-400">TikTok:</span>
+                            <span className="font-medium text-gray-700 w-20 dark:text-gray-400">{i18n.t('tiktokLabel')}:</span>
                             <button
                               onClick={(e) => {
                                 e.preventDefault();
@@ -3199,13 +3537,13 @@ const App = () => {
                         )}
                         {participant.linkedin_username && (
                           <div className="flex items-center text-sm dark:text-gray-300">
-                            <span className="font-medium text-gray-700 w-20 dark:text-gray-400">LinkedIn:</span>
+                            <span className="font-medium text-gray-700 w-20 dark:text-gray-400">{i18n.t('linkedinLabel')}:</span>
                             <button
                               onClick={(e) => {
                                 e.preventDefault();
-                                // Log the LinkedIn click analytics
+                                // Log the ' + i18n.t('linkedinLabel') + ' click analytics
                                 logSocialClick(participant.id, 'linkedin', trainId);
-                                // For LinkedIn URLs, open directly in new tab
+                                // For ' + i18n.t('linkedinLabel') + ' URLs, open directly in new tab
                                 window.open(participant.linkedin_username, '_blank');
                               }}
                               className="truncate hover:underline cursor-pointer bg-transparent border-none p-0 font-inherit text-left"
@@ -3217,7 +3555,7 @@ const App = () => {
                         )}
                         {participant.youtube_username && (
                           <div className="flex items-center text-sm dark:text-gray-300">
-                            <span className="font-medium text-gray-700 w-20 dark:text-gray-400">YouTube:</span>
+                            <span className="font-medium text-gray-700 w-20 dark:text-gray-400">{i18n.t('youtubeLabel')}:</span>
                             <button
                               onClick={(e) => {
                                 e.preventDefault();
@@ -3233,7 +3571,7 @@ const App = () => {
                         )}
                         {participant.twitch_username && (
                           <div className="flex items-center text-sm dark:text-gray-300">
-                            <span className="font-medium text-gray-700 w-20 dark:text-gray-400">Twitch:</span>
+                            <span className="font-medium text-gray-700 w-20 dark:text-gray-400">{i18n.t('twitchLabel')}:</span>
                             <button
                               onClick={(e) => {
                                 e.preventDefault();
@@ -3244,6 +3582,38 @@ const App = () => {
                               style={{ color: trainTheme.accentColor }}
                             >
                               @{participant.twitch_username}
+                            </button>
+                          </div>
+                        )}
+                        {participant.wechat_username && (
+                          <div className="flex items-center text-sm dark:text-gray-300">
+                            <span className="font-medium text-gray-700 w-20 dark:text-gray-400">{i18n.t('wechat')}:</span>
+                            <button
+                              onClick={(e) => {
+                                e.preventDefault();
+                                const smartLink = createSmartLink('wechat', participant.wechat_username);
+                                handleLinkClick(smartLink, 'wechat', participant.id, trainId);
+                              }}
+                              className="truncate hover:underline cursor-pointer bg-transparent border-none p-0 font-inherit text-left"
+                              style={{ color: trainTheme.accentColor }}
+                            >
+                              @{participant.wechat_username}
+                            </button>
+                          </div>
+                        )}
+                        {participant.line_username && (
+                          <div className="flex items-center text-sm dark:text-gray-300">
+                            <span className="font-medium text-gray-700 w-20 dark:text-gray-400">{i18n.t('line')}:</span>
+                            <button
+                              onClick={(e) => {
+                                e.preventDefault();
+                                const smartLink = createSmartLink('line', participant.line_username);
+                                handleLinkClick(smartLink, 'line', participant.id, trainId);
+                              }}
+                              className="truncate hover:underline cursor-pointer bg-transparent border-none p-0 font-inherit text-left"
+                              style={{ color: trainTheme.accentColor }}
+                            >
+                              @{participant.line_username}
                             </button>
                           </div>
                         )}
@@ -3277,7 +3647,7 @@ const App = () => {
               style={{ minHeight: '160px' }}
             >
               <Plus className="h-8 w-8 text-gray-400 mb-2" />
-              <p className="text-gray-500 font-medium">Join Train</p>
+              <p className="text-gray-500 font-medium">{i18n.t('joinTrainButton')}</p>
             </div>
           </div>
         </div>
@@ -3286,74 +3656,92 @@ const App = () => {
         {isAdmin && showAdminPanel && (
           <div className="max-w-4xl mx-auto p-4 mt-4 bg-red-50 border border-red-200 rounded-xl dark:bg-red-900/20 dark:border-red-700">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-bold text-red-800 dark:text-red-200">Admin Panel</h3>
+              <h3 className="text-lg font-bold text-red-800 dark:text-red-200">{i18n.t('adminPanel')}</h3>
               <button 
                 onClick={() => setShowAdminPanel(false)}
                 className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-200"
               >
-                Close
+                {i18n.t('closeText')}
               </button>
             </div>
             
+            {/* Demo Train Admin Notice */}
+            {isDemoTrain && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4 dark:bg-blue-900 dark:border-blue-700">
+                <div className="flex items-start gap-2">
+                  <span className="text-lg">ℹ️</span>
+                  <div>
+                    <p className="text-blue-800 font-medium dark:text-blue-100">
+                      Demo Train Admin Access
+                    </p>
+                    <p className="text-blue-700 text-sm dark:text-blue-200">
+                      You have full admin privileges on this demo train. Test locking, clearing, and all admin features. 
+                      This train will remain available indefinitely for demonstration purposes.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+            
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="bg-white p-4 rounded-lg shadow dark:bg-gray-700">
-                <h4 className="font-medium text-gray-800 mb-2 dark:text-white">Train Controls</h4>
+                <h4 className="font-medium text-gray-800 mb-2 dark:text-white">{i18n.t('trainControls')}</h4>
                 <div className="flex flex-wrap gap-2">
                   <button
                     onClick={toggleTrainLock}
                     className={`px-4 py-2 rounded-lg font-medium ${trainLocked ? 'bg-yellow-500 hover:bg-yellow-600 text-white' : 'bg-green-500 hover:bg-green-600 text-white'}`}
                   >
-                    {trainLocked ? 'Unlock Train' : 'Lock Train'}
+                    {trainLocked ? i18n.t('unlockTrain') : i18n.t('lockTrain')}
                   </button>
                   <button
                     onClick={clearTrain}
                     className="px-4 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700"
                   >
-                    Clear Train
+                    {i18n.t('clearTrainAction')}
                   </button>
                 </div>
                 <p className="text-sm text-gray-600 mt-2 dark:text-gray-300">
-                  Status: {trainLocked ? '🔒 Locked (no new joins)' : '🔓 Unlocked (open for joins)'}
+                  {i18n.t('status')}: {trainLocked ? '🔒 ' + i18n.t('lockedNoNewJoins') : '🔓 ' + i18n.t('unlockedOpenForJoins')}
                 </p>
               </div>
               
               <div className="bg-white p-4 rounded-lg shadow dark:bg-gray-700">
-                <h4 className="font-medium text-gray-800 mb-2 dark:text-white">Reclaim Admin Access</h4>
+                <h4 className="font-medium text-gray-800 mb-2 dark:text-white">{i18n.t('reclaimAccessText')}</h4>
                 <div className="flex gap-2 mb-2">
                   <input
                     type="text"
                     value={reclaimDisplayName}
                     onChange={(e) => setReclaimDisplayName(e.target.value)}
-                    placeholder="Enter your display name"
+                    placeholder={i18n.t('enterYourDisplayName')}
                     className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white dark:border-gray-600"
                   />
                   <button
                     onClick={async () => {
                       const success = await reclaimAdminAccess(reclaimDisplayName);
                       if (success) {
-                        alert('Admin access successfully restored!');
+                        alert(i18n.t('adminAccessSuccessfullyRestored'));
                       } else {
-                        alert('Could not restore admin access. Please check your display name.');
+                        alert(i18n.t('couldNotRestoreAdminAccess'));
                       }
                     }}
                     className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
                   >
-                    Restore
+                    {i18n.t('restore')}
                   </button>
                 </div>
                 <p className="text-sm text-gray-600 dark:text-gray-300">
-                  Lost admin access? Enter your display name to reclaim it.
+                  {i18n.t('lostAdminAccess')}
                 </p>
               </div>
               
               <div className="bg-white p-4 rounded-lg shadow dark:bg-gray-700">
-                <h4 className="font-medium text-gray-800 mb-2 dark:text-white">Rename Train</h4>
+                <h4 className="font-medium text-gray-800 mb-2 dark:text-white">{i18n.t('renameTrainText')}</h4>
                 <div className="flex gap-2 mb-2">
                   <input
                     type="text"
                     value={newTrainName}
                     onChange={(e) => setNewTrainName(e.target.value)}
-                    placeholder="New train name"
+                    placeholder={i18n.t('enterNewTrainName')}
                     maxLength="50"
                     className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white dark:border-gray-600"
                   />
@@ -3361,16 +3749,16 @@ const App = () => {
                     onClick={renameTrain}
                     className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
                   >
-                    Rename
+                    {i18n.t('renameButton')}
                   </button>
                 </div>
                 <p className="text-sm text-gray-600 dark:text-gray-300">
-                  Current: {trainName || 'Unnamed Train'}
+                  {i18n.t('current')}: {trainName || i18n.t('unnamedTrain')}
                 </p>
               </div>
               
               <div className="bg-white p-4 rounded-lg shadow dark:bg-gray-700">
-                <h4 className="font-medium text-gray-800 mb-2 dark:text-white">Participants ({participants.length})</h4>
+                <h4 className="font-medium text-gray-800 mb-2 dark:text-white">{i18n.t('participantsCount')} ({participants.length})</h4>
                 <div className="max-h-40 overflow-y-auto">
                   {participants.map((participant) => (
                     <div key={participant.id} className="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-600">
@@ -3474,7 +3862,7 @@ const App = () => {
           <form onSubmit={handleJoinTrain}>
             <div className="mb-6">
               <label className="block text-gray-700 text-sm font-medium mb-2" htmlFor="joinDisplayName">
-                Display Name *
+                {i18n.t('displayNameLabel')}
               </label>
               <input
                 id="joinDisplayName"
@@ -3482,7 +3870,7 @@ const App = () => {
                 value={joinFormData.displayName}
                 onChange={(e) => setJoinFormData({...joinFormData, displayName: e.target.value})}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white dark:border-gray-600"
-                placeholder="John Doe"
+                placeholder={i18n.t('enterDisplayName')}
                 required
               />
             </div>
@@ -3499,13 +3887,15 @@ const App = () => {
                   className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white dark:border-gray-600"
                   required
                 >
-                  <option value="">Select Platform</option>
-                  <option value="instagram">Instagram</option>
-                  <option value="tiktok">TikTok</option>
-                  <option value="twitter">X/Twitter</option>
-                  <option value="youtube">YouTube</option>
-                  <option value="twitch">Twitch</option>
-                  <option value="linkedin">LinkedIn</option>
+                  <option value="">{i18n.t('selectPlatform')}</option>
+                  <option value="instagram">{i18n.t('instagram')}</option>
+                  <option value="tiktok">{i18n.t('tiktok')}</option>
+                  <option value="twitter">{i18n.t('twitter')}</option>
+                  <option value="youtube">{i18n.t('youtube')}</option>
+                  <option value="twitch">{i18n.t('twitch')}</option>
+                  <option value="linkedin">{i18n.t('linkedin')}</option>
+                  <option value="wechat">{i18n.t('wechat')}</option>
+                  <option value="line">{i18n.t('line')}</option>
                 </select>
                 
                 <input
@@ -3519,19 +3909,19 @@ const App = () => {
               </div>
               
               <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                This will be used to generate your avatar
+                {i18n.t('generateAvatar')}
               </p>
             </div>
             
             <div className="mb-6">
               <label className="block text-gray-700 text-sm font-medium mb-3">
-                Optional Additional Links
+                {i18n.t('optionalAdditionalLinks')}
               </label>
               
               <div className="space-y-4">
                 <div>
                   <label className="block text-gray-700 text-sm font-medium mb-1" htmlFor="joinInstagram">
-                    Instagram Username
+                    {i18n.t('instagramUsername')}
                   </label>
                   <input
                     id="joinInstagram"
@@ -3546,7 +3936,7 @@ const App = () => {
                 
                 <div>
                   <label className="block text-gray-700 text-sm font-medium mb-1" htmlFor="joinTiktok">
-                    TikTok Username
+                    {i18n.t('tiktokLabel')} Username
                   </label>
                   <input
                     id="joinTiktok"
@@ -3561,7 +3951,7 @@ const App = () => {
                 
                 <div>
                   <label className="block text-gray-700 text-sm font-medium mb-1" htmlFor="joinTwitter">
-                    Twitter/X Username
+                    {i18n.t('twitterUsername')}
                   </label>
                   <input
                     id="joinTwitter"
@@ -3576,7 +3966,7 @@ const App = () => {
                 
                 <div>
                   <label className="block text-gray-700 text-sm font-medium mb-1" htmlFor="joinLinkedin">
-                    LinkedIn Profile URL
+                    {i18n.t('linkedinUsername')}
                   </label>
                   <input
                     id="joinLinkedin"
@@ -3586,12 +3976,12 @@ const App = () => {
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white dark:border-gray-600"
                     placeholder="https://linkedin.com/in/your-profile"
                   />
-                  <p className="text-xs text-gray-500 mt-1">Please paste your full profile link to ensure users find the correct page.</p>
+                  <p className="text-xs text-gray-500 mt-1">{i18n.t('pasteFullProfileLink')}</p>
                 </div>
                 
                 <div>
                   <label className="block text-gray-700 text-sm font-medium mb-1" htmlFor="joinYoutube">
-                    YouTube Channel Name
+                    {i18n.t('youtubeUsername')}
                   </label>
                   <input
                     id="joinYoutube"
@@ -3605,7 +3995,7 @@ const App = () => {
                 
                 <div>
                   <label className="block text-gray-700 text-sm font-medium mb-1" htmlFor="joinTwitch">
-                    Twitch Username
+                    {i18n.t('twitchUsername')}
                   </label>
                   <input
                     id="joinTwitch"
@@ -3619,7 +4009,7 @@ const App = () => {
                 
                 <div>
                   <label className="block text-gray-700 text-sm font-medium mb-1" htmlFor="joinFacebook">
-                    Facebook Profile URL
+                    {i18n.t('facebookUsername')}
                   </label>
                   <input
                     id="joinFacebook"
@@ -3629,12 +4019,12 @@ const App = () => {
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white dark:border-gray-600"
                     placeholder="https://facebook.com/your-profile"
                   />
-                  <p className="text-xs text-gray-500 mt-1">Please paste your full profile link</p>
+                  <p className="text-xs text-gray-500 mt-1">{i18n.t('pasteFullProfileLink2')}</p>
                 </div>
                 
                 <div>
                   <label className="block text-gray-700 text-sm font-medium mb-1" htmlFor="joinWhatsapp">
-                    WhatsApp Number
+                    {i18n.t('whatsappUsername')}
                   </label>
                   <input
                     id="joinWhatsapp"
@@ -3644,12 +4034,12 @@ const App = () => {
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white dark:border-gray-600"
                     placeholder="+1234567890"
                   />
-                  <p className="text-xs text-gray-500 mt-1">Include country code</p>
+                  <p className="text-xs text-gray-500 mt-1">{i18n.t('includeCountryCode')}</p>
                 </div>
                 
                 <div>
                   <label className="block text-gray-700 text-sm font-medium mb-1" htmlFor="joinTelegram">
-                    Telegram Username
+                    {i18n.t('telegramUsername')}
                   </label>
                   <input
                     id="joinTelegram"
@@ -3663,7 +4053,7 @@ const App = () => {
                 
                 <div>
                   <label className="block text-gray-700 text-sm font-medium mb-1" htmlFor="joinDiscord">
-                    Discord ID
+                    {i18n.t('discordUsername')}
                   </label>
                   <input
                     id="joinDiscord"
@@ -3677,7 +4067,7 @@ const App = () => {
                 
                 <div>
                   <label className="block text-gray-700 text-sm font-medium mb-1" htmlFor="joinGithub">
-                    GitHub Username
+                    {i18n.t('githubUsername')}
                   </label>
                   <input
                     id="joinGithub"
@@ -3686,6 +4076,36 @@ const App = () => {
                     onChange={(e) => setJoinFormData({...joinFormData, github: e.target.value})}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white dark:border-gray-600"
                     placeholder="@username"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-gray-700 text-sm font-medium mb-1" htmlFor="joinWechat">
+                    {i18n.t('wechatUsername')}
+                  </label>
+                  <input
+                    id="joinWechat"
+                    type="text"
+                    value={joinFormData.wechat}
+                    onChange={(e) => setJoinFormData({...joinFormData, wechat: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white dark:border-gray-600"
+                    placeholder="@username"
+                    maxLength="50"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-gray-700 text-sm font-medium mb-1" htmlFor="joinLine">
+                    {i18n.t('lineUsername')}
+                  </label>
+                  <input
+                    id="joinLine"
+                    type="text"
+                    value={joinFormData.line}
+                    onChange={(e) => setJoinFormData({...joinFormData, line: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white dark:border-gray-600"
+                    placeholder="@lineid"
+                    maxLength="50"
                   />
                 </div>
               </div>
@@ -3702,7 +4122,7 @@ const App = () => {
                 maxLength="100"
                 rows="3"
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white dark:border-gray-600"
-                placeholder="Tell us about yourself..."
+                placeholder={i18n.t('tellUsAboutYourself')}
               />
             </div>
             
@@ -3723,7 +4143,7 @@ const App = () => {
                 disabled={loading}
                 className="flex-1 bg-gradient-to-r from-purple-500 to-pink-500 text-white py-3 rounded-lg font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
               >
-                {loading ? 'Joining...' : 'Join Train'}
+                {loading ? i18n.t('joining') : i18n.t('joinTrainButton')}
               </button>
             </div>
           </form>
@@ -3739,7 +4159,7 @@ const App = () => {
         <div className="flex justify-center mb-6 relative">
           <img src="/followtrain-icon.png" alt="FollowTrain Icon" className="h-48 w-48 object-contain" />
           <button
-            onClick={toggleDarkMode}
+            onClick={toggleThemeDarkMode}
             className="absolute top-0 right-0 bg-gray-200 text-gray-800 px-3 py-1 rounded-lg text-sm font-medium hover:bg-gray-300 transition-colors dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600"
             aria-label={darkMode ? "Switch to light mode" : "Switch to dark mode"}
           >
@@ -3749,6 +4169,7 @@ const App = () => {
         </div>
         <h1 className="text-3xl font-bold text-gray-800 mb-2 dark:text-white">Debug Page</h1>
         <p className="text-gray-600 mb-8 dark:text-gray-300">Developer testing tools</p>
+        {/* The toggle button was moved before this in a previous update */}
         
         <div className="space-y-4">
           <button

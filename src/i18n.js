@@ -24,6 +24,8 @@ const translations = {
     telegram: 'Telegram',
     discord: 'Discord',
     github: 'GitHub',
+    wechat: 'WeChat',
+    line: 'LINE',
     
     // Actions
     join: 'Join',
@@ -46,57 +48,45 @@ const translations = {
     trainNotFound: 'Train not found',
     invalidTrainId: 'Invalid train ID',
     
-    // Activity Feed
-    activityFeed: 'Activity Feed',
-    joinedTrain: 'joined the train',
-    leftTrain: 'left the train',
-    updatedProfile: 'updated their profile',
-    trainLocked: 'Train was locked',
-    trainUnlocked: 'Train was unlocked',
-    
-    // Admin Panel
-    adminPanel: 'Admin Panel',
-    trainControls: 'Train Controls',
-    reclaimAccess: 'Reclaim Admin Access',
-    clearTrain: 'Clear Train',
-    
-    // Theme Customization
-    themeCustomization: 'Theme Customization',
-    themePresets: 'Theme Presets',
-    customColors: 'Custom Colors',
-    preview: 'Preview',
-    
-    // Export Options
-    exportOptions: 'Export Options',
-    selectAll: 'Select All',
-    clearAll: 'Clear All',
-    copyToClipboard: 'Copy to Clipboard',
-    downloadAsFile: 'Download as File',
-    
-    // Debug
-    debugMode: 'Debug Mode',
-    enableDebug: 'Enable Debug',
-    disableDebug: 'Disable Debug',
-    
-    // Additional UI Elements
-    language: 'Language',
-    debugPanel: 'Debug Panel',
-    debugInfo: 'Debug Info',
-    logs: 'Logs',
-    or: 'Or',
+    // Form Labels
+    enterTrainName: 'Enter a name for your train',
+    enterDisplayName: 'Enter your display name',
     enterTrainId: 'Enter Train ID',
-    sampleCard: 'Sample Card',
-    primary: 'Primary',
-    secondary: 'Secondary',
-    accent: 'Accent',
-    background: 'Background',
-    text: 'Text',
-    card: 'Card',
-    terms: 'Terms of Service',
-    privacy: 'Privacy Policy'
+    joinTrainButton: 'Join Train',
+    createTrainButton: 'Create Train',
+    or: 'or',
+    noLoginRequired: 'No login required',
+    
+    // Platform Labels
+    instagramLabel: 'Instagram',
+    tiktokLabel: 'TikTok',
+    twitterLabel: 'Twitter/X',
+    youtubeLabel: 'YouTube',
+    twitchLabel: 'Twitch',
+    linkedinLabel: 'LinkedIn',
+    facebookLabel: 'Facebook',
+    whatsappLabel: 'WhatsApp',
+    telegramLabel: 'Telegram',
+    discordLabel: 'Discord',
+    githubLabel: 'GitHub',
+    wechatLabel: 'WeChat',
+    lineLabel: 'LINE',
+    
+    // Username Labels
+    instagramUsername: 'Instagram Username',
+    tiktokUsername: 'TikTok Username',
+    twitterUsername: 'Twitter/X Username',
+    youtubeUsername: 'YouTube Username',
+    twitchUsername: 'Twitch Username',
+    linkedinUsername: 'LinkedIn Username',
+    facebookUsername: 'Facebook Profile URL',
+    whatsappUsername: 'WhatsApp Number',
+    telegramUsername: 'Telegram Username',
+    discordUsername: 'Discord Username',
+    githubUsername: 'GitHub Username',
+    wechatUsername: 'WeChat Username',
+    lineUsername: 'LINE ID'
   },
-  
-
   
   zh: {
     // Core UI
@@ -111,8 +101,8 @@ const translations = {
     // Social Media Platforms
     instagram: 'Instagram',
     tiktok: 'TikTok',
-    twitter: 'X/推特',
-    linkedin: '领英',
+    twitter: 'X/Twitter',
+    linkedin: 'LinkedIn',
     youtube: 'YouTube',
     twitch: 'Twitch',
     facebook: 'Facebook',
@@ -120,6 +110,8 @@ const translations = {
     telegram: 'Telegram',
     discord: 'Discord',
     github: 'GitHub',
+    wechat: '微信',
+    line: 'LINE',
     
     // Actions
     join: '加入',
@@ -142,54 +134,44 @@ const translations = {
     trainNotFound: '列车未找到',
     invalidTrainId: '无效的列车ID',
     
-    // Activity Feed
-    activityFeed: '活动动态',
-    joinedTrain: '加入了列车',
-    leftTrain: '离开了列车',
-    updatedProfile: '更新了个人资料',
-    trainLocked: '列车已锁定',
-    trainUnlocked: '列车已解锁',
-    
-    // Admin Panel
-    adminPanel: '管理面板',
-    trainControls: '列车控制',
-    reclaimAccess: '恢复管理员权限',
-    clearTrain: '清空列车',
-    
-    // Theme Customization
-    themeCustomization: '主题定制',
-    themePresets: '主题预设',
-    customColors: '自定义颜色',
-    preview: '预览',
-    
-    // Export Options
-    exportOptions: '导出选项',
-    selectAll: '全选',
-    clearAll: '清空',
-    copyToClipboard: '复制到剪贴板',
-    downloadAsFile: '下载为文件',
-    
-    // Debug
-    debugMode: '调试模式',
-    enableDebug: '启用调试',
-    disableDebug: '禁用调试',
-    
-    // Additional UI Elements
-    language: '语言',
-    debugPanel: '调试面板',
-    debugInfo: '调试信息',
-    logs: '日志',
-    or: '或',
+    // Form Labels
+    enterTrainName: '输入您的列车名称',
+    enterDisplayName: '输入您的显示名称',
     enterTrainId: '输入列车ID',
-    sampleCard: '示例卡片',
-    primary: '主色',
-    secondary: '辅色',
-    accent: '强调色',
-    background: '背景色',
-    text: '文字色',
-    card: '卡片色',
-    terms: '服务条款',
-    privacy: '隐私政策'
+    joinTrainButton: '加入列车',
+    createTrainButton: '创建列车',
+    or: '或',
+    noLoginRequired: '无需登录',
+    
+    // Platform Labels
+    instagramLabel: 'Instagram',
+    tiktokLabel: 'TikTok',
+    twitterLabel: 'Twitter/X',
+    youtubeLabel: 'YouTube',
+    twitchLabel: 'Twitch',
+    linkedinLabel: 'LinkedIn',
+    facebookLabel: 'Facebook',
+    whatsappLabel: 'WhatsApp',
+    telegramLabel: 'Telegram',
+    discordLabel: 'Discord',
+    githubLabel: 'GitHub',
+    wechatLabel: '微信',
+    lineLabel: 'LINE',
+    
+    // Username Labels
+    instagramUsername: 'Instagram 用户名',
+    tiktokUsername: 'TikTok 用户名',
+    twitterUsername: 'Twitter/X 用户名',
+    youtubeUsername: 'YouTube 用户名',
+    twitchUsername: 'Twitch 用户名',
+    linkedinUsername: 'LinkedIn 用户名',
+    facebookUsername: 'Facebook 个人资料链接',
+    whatsappUsername: 'WhatsApp 号码',
+    telegramUsername: 'Telegram 用户名',
+    discordUsername: 'Discord 用户名',
+    githubUsername: 'GitHub 用户名',
+    wechatUsername: '微信用户名',
+    lineUsername: 'LINE ID'
   }
 };
 
@@ -230,39 +212,46 @@ class I18nManager {
     return 'en';
   }
   
-  // Set current language
-  setLanguage(lang) {
-    if (translations[lang]) {
-      this.currentLanguage = lang;
-      localStorage.setItem('followtrain_language', lang);
-      console.log('[I18N] Language changed to:', lang);
-      return true;
-    }
-    console.warn('[I18N] Unsupported language:', lang);
-    return false;
-  }
-  
-  // Get translation
+  // Get translation for a key
   t(key, params = {}) {
-    const translation = translations[this.currentLanguage]?.[key] || translations.en?.[key] || key;
+    let translation = translations[this.currentLanguage]?.[key] || 
+                     translations['en']?.[key] || 
+                     key;
     
-    // Handle parameter substitution
-    let result = translation;
+    // Replace parameters
     Object.keys(params).forEach(param => {
-      result = result.replace(`{${param}}`, params[param]);
+      translation = translation.replace(`{{${param}}}`, params[param]);
     });
     
+    // Debug logging
     if (this.debugMode) {
       this.debugLogs.push({
         timestamp: new Date().toISOString(),
         key,
         language: this.currentLanguage,
-        translation: result,
+        translation,
         params
       });
     }
     
-    return result;
+    return translation;
+  }
+  
+  // Change language
+  setLanguage(langCode) {
+    if (translations[langCode]) {
+      this.currentLanguage = langCode;
+      localStorage.setItem('followtrain_language', langCode);
+      console.log('[I18N] Language changed to:', langCode);
+      return true;
+    }
+    console.warn('[I18N] Unsupported language:', langCode);
+    return false;
+  }
+  
+  // Get current language
+  getCurrentLanguage() {
+    return this.currentLanguage;
   }
   
   // Get available languages

@@ -96,9 +96,11 @@ cp .env.example .env
 Then update `.env` with your Supabase credentials.
 
 5. Set up the database:
-   - Run the SQL schema from `schema_fresh.sql` in your Supabase SQL Editor for the latest security enhancements
+   - Run the SQL schema from `schema.sql` in your Supabase SQL Editor
+   - The schema is idempotent and safe to run multiple times
    - Make sure to enable Realtime on the participants table
    - The schema includes proper RLS policies with validation instead of overly permissive policies
+   - **Note**: The schema includes a cleanup function for expired trains. For automatic cleanup, deploy the Edge Function in `supabase/functions/cleanup-trains.ts` and set up scheduling (see `SUPABASE_SCHEDULING.md` for detailed instructions)
 
 6. Start the development server:
 ```bash

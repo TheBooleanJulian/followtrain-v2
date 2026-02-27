@@ -1,0 +1,17 @@
+name: Cleanup Expired Trains
+
+on:
+  schedule:
+    # Run every hour
+    - cron: '0 * * * *'
+  workflow_dispatch: # Allows manual trigger
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call cleanup function
+        run: |
+          curl -X POST \
+            -H "Content-Type: application/json" \
+            "https://wfxtdtngbkolwiutnhqi.supabase.co/functions/v1/cleanup-trains"

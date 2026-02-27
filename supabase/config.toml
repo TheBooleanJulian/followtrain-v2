@@ -1,0 +1,37 @@
+# For reference: https://supabase.com/docs/guides/cli/configuration
+
+[project]
+slug = "followtrain-v2"
+
+[api]
+port = 54321
+schemas = ["public", "storage", "auth"]
+extra_search_path = ["public", "extensions"]
+
+[db]
+port = 54322
+major_version = 15
+
+[studio]
+port = 54323
+
+# Email testing server
+[inbucket]
+port = 54324
+smtp_port = 54325
+pop3_port = 54326
+
+[auth]
+site_url = "http://localhost:3000"
+additional_redirect_urls = ["http://localhost:3000"]
+jwt_expiry = 3600
+enable_signup = true
+
+[auth.email]
+enable_signup_verification = false
+
+[analytics]
+enabled = false
+
+[functions."cleanup-trains"]
+verify_jwt = false

@@ -36,6 +36,8 @@ BEGIN
           telegram_username VARCHAR(32),
           discord_id VARCHAR(20),
           github_username VARCHAR(39),
+          wechat_username VARCHAR(50),
+          line_username VARCHAR(50),
           bio VARCHAR(100),
           is_host BOOLEAN DEFAULT FALSE,
           admin_token VARCHAR(24), -- For host admin access
@@ -325,9 +327,7 @@ $$ LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = public, pg_catalog;
 
--- Optionally enable the scheduled cleanup (uncomment if pg_cron is available)
--- SELECT cron.schedule(
---   'cleanup-expired-trains',
---   '0 * * * *',  -- Every hour
---   $$SELECT public.cleanup_expired_trains()$$
--- );
+-- Optional: For automatic cleanup, use Supabase Edge Functions instead of pg_cron
+-- See supabase/functions/cleanup-trains.ts for the Edge Function implementation
+-- You can call this function manually or set up a scheduler to call the Edge Function endpoint
+-- The function public.cleanup_expired_trains() is still available for direct use

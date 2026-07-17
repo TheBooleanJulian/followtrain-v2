@@ -1,223 +1,125 @@
-# 🚂 FollowTrain
+<div align="center">
 
-https://followtrain-v2.vercel.app/
+# FollowTrain v2
 
-## At events?
+**AirDrop for socials — one QR code, everyone follows everyone, no login required.**
 
-Instead of:
+![React](https://img.shields.io/badge/-React-61DAFB?logo=react&logoColor=black)
+![TypeScript](https://img.shields.io/badge/-TypeScript-3178C6?logo=typescript&logoColor=white)
+![Supabase](https://img.shields.io/badge/-Supabase-3ECF8E?logo=supabase&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/-Tailwind-06B6D4?logo=tailwindcss&logoColor=white)
+![Vercel](https://img.shields.io/badge/-Vercel-000000?logo=vercel&logoColor=white)
+![License](https://img.shields.io/badge/license-MIT-00D4C8.svg)
 
-"Wait what's your IG?"
+</div>
 
-"Spell that?"
+---
 
-"Pass your phone."
+## What it does
 
-
-Just:
-
-
-**1 QR code**
-
-**Everyone joins**
-
-**Everyone follows everyone**
-
-
-**Done.**
-
-
-No app.
-
-No login.
-
-Deletes in 72 hours.
-
-
-It's AirDrop for socials. 🔥
-
-
-A lightweight app that lets groups of people share and follow each other across multiple social media platforms via a shared link. No login required.
-
-FollowTrain v2 is a lightweight React application designed to help groups share and follow each other across social media platforms through a simple, shared-link system. The project eliminates the need for user authentication while enabling real-time collaboration among participants. Users can create a "train" (a group), invite others via a unique shareable URL, and manage participants in real time. The application emphasizes simplicity, privacy, and cross-platform social media integration without requiring accounts or API calls to social networks.
+FollowTrain v2 solves the awkward "what's your IG?" shuffle at events. One person creates a "train" and shares the link or QR code — everyone joins, sees each other's profiles across up to 11 social platforms, and can open any handle directly. No app download, no account, no API calls to social networks. Trains auto-delete after 72 hours, keeping things lightweight and private.
 
 ## Features
 
-- Create a follow train with a unique shareable URL
-- **Automatic ID collision handling** - Never fails due to duplicate train IDs
-- Join a train by entering name and social media usernames
-- View all participants as profile cards with avatars
-- Click any social media handle to open profiles directly
-- **Enhanced export system** - Single export button with customizable platform selection including all 11 platforms
-- **Smart username autocomplete** - Visual suggestions with avatar previews for duplicate names
-- **Edit your own entries** - Users can modify their own profile information
-- **Legal compliance** - Updated footer with copyright, terms, and privacy links
-- **Working legal pages** - Terms and Privacy pages properly served on Vercel deployment
-- Copy shareable link or QR code with one click
-- **Admin controls** - Lock trains, kick participants, manage settings
-- No login or account required
-- Mobile-first responsive design with dark mode support
+- Create a train with a unique shareable URL and QR code
+- Join by entering a display name and any combination of social media handles
+- View all participants as profile cards — click any handle to open the profile directly
+- Smart username autocomplete with avatar previews for duplicate display names
+- Edit your own entry after joining
+- Export participant lists with customisable platform selection (11 platforms)
+- Admin controls: lock trains, kick participants, manage settings with persistent admin token
+- Automatic ID collision handling — train creation never fails on duplicate IDs
+- Demo train with infinite expiry for showcasing the app
+- Dark mode with SSR-safe initialisation
+- English and Chinese (zh) language support
+- Supabase Edge Function for automatic cleanup of expired trains
+- Mobile-first responsive design, no login or account required
 
 ## Tech Stack
 
-- **Frontend**: React with Tailwind CSS
-- **Database**: Supabase (free tier)
-- **Hosting**: Vercel (free tier)
-- **Icons**: lucide-react
+| Layer | Choice |
+|---|---|
+| Frontend | React 18 + Tailwind CSS |
+| Database & Auth | Supabase (Postgres + RLS + Edge Functions) |
+| Routing | react-router-dom v7 |
+| Icons | lucide-react |
+| QR Code | react-qr-code |
+| Hosting | Vercel |
 
-## Getting Started
+## Quick Start
 
-### Prerequisites
-
-- Node.js (v14 or higher)
-- npm or yarn
-
-### Installation
-
-1. Clone the repository:
 ```bash
-npx degit your-username/followtrain followtrain
-cd followtrain
-```
-
-2. Install dependencies:
-```bash
+git clone https://github.com/TheBooleanJulian/followtrain-v2
+cd followtrain-v2
 npm install
-```
-
-3. Set up Supabase:
-   - Create a Supabase account at [https://supabase.com](https://supabase.com)
-   - Create a new project
-   - Copy your project URL and anon key from Project Settings > API
-
-4. Create environment variables:
-```bash
 cp .env.example .env
-```
-Then update `.env` with your Supabase credentials.
-
-5. Set up the database:
-   - Run the SQL schema from `schema.sql` in your Supabase SQL Editor
-   - The schema is idempotent and safe to run multiple times
-   - Make sure to enable Realtime on the participants table
-   - The schema includes proper RLS policies with validation instead of overly permissive policies
-   - **Note**: The schema includes a cleanup function for expired trains. For automatic cleanup, deploy the Edge Function in `supabase/functions/cleanup-trains.ts` and set up scheduling (see `SUPABASE_SCHEDULING.md` for detailed instructions)
-
-6. Start the development server:
-```bash
+# Add your Supabase URL and anon key to .env
 npm start
 ```
 
-The app will run on [http://localhost:3000](http://localhost:3000).
+The app runs on [http://localhost:3000](http://localhost:3000).
 
-## Database Schema
+## Configuration
 
-The application uses two tables:
+| Variable | Required | Description |
+|---|---|---|
+| `REACT_APP_SUPABASE_URL` | Yes | Your Supabase project URL |
+| `REACT_APP_SUPABASE_ANON_KEY` | Yes | Your Supabase anon/public key |
 
-### `trains`
-- `id`: String (6-char random alphanumeric, uppercase) - Primary Key
-- `name`: String (required, max 50 chars)
-- `created_at`: Timestamp
-- `locked`: Boolean (default: false) - Lock train to prevent new joins
-- `expires_at`: Timestamp (default: 72 hours from creation) - Auto-expiry
+## Project Structure
 
-### `participants`
-- `id`: UUID - Primary Key
-- `train_id`: String (foreign key to trains.id)
-- `display_name`: String (required, max 100 chars)
-- `instagram_username`: String (optional, max 30 chars)
-- `tiktok_username`: String (optional, max 50 chars)
-- `twitter_username`: String (optional, max 50 chars)
-- `linkedin_username`: String (optional, max 100 chars) - LinkedIn profile URL
-- `youtube_username`: String (optional, max 100 chars)
-- `twitch_username`: String (optional, max 50 chars)
-- `facebook_username`: String (optional, max 50 chars) - Facebook profile URL
-- `whatsapp_number`: String (optional, max 15 chars) - Phone number with country code
-- `telegram_username`: String (optional, max 32 chars)
-- `discord_id`: String (optional, max 20 chars) - Discord username#tag or user ID
-- `github_username`: String (optional, max 39 chars)
-- `bio`: String (optional, max 100 chars)
-- `is_host`: Boolean
-- `admin_token`: String (24-char token for host admin access)
-- `joined_at`: Timestamp
-- `avatar_url`: Text (cached avatar URL for performance)
+```
+followtrain-v2/
+|-- src/
+|   |-- types/
+|   |   `-- supabase.ts          # Auto-generated Supabase types
+|   `-- ...
+|-- supabase/
+|   `-- functions/
+|       `-- cleanup-trains.ts    # Edge Function: delete expired trains
+|-- migrations/                  # Database migration SQL files
+|-- public/                      # Static assets + legal pages
+|-- supabase_security.sql        # RLS policies
+|-- tailwind.config.js
+|-- vercel.json
+`-- package.json
+```
 
-## Deployment
+## Database Setup
 
-### Deploy to Vercel
+1. Create a Supabase project at [supabase.com](https://supabase.com)
+2. Run the migration SQL from `migrations/` in the Supabase SQL Editor
+3. Enable Realtime on the `participants` table
+4. Deploy the cleanup Edge Function: `npm run supabase:deploy`
+5. Configure scheduled cleanup — see `SUPABASE_SCHEDULING.md`
 
-1. Push your code to a GitHub repository
-2. Go to [Vercel](https://vercel.com/) and connect your GitHub account
-3. Import your project
-4. Add your environment variables in the Vercel dashboard:
-   - `REACT_APP_SUPABASE_URL`
-   - `REACT_APP_SUPABASE_ANON_KEY`
-5. Deploy!
+## Status / Roadmap
 
-## Technical Features
+- [x] Core train creation and joining
+- [x] Admin controls (lock, kick, token persistence)
+- [x] QR code sharing
+- [x] 11-platform social handle support
+- [x] Dark mode + Chinese localisation
+- [x] Demo train with infinite expiry
+- [x] Supabase Edge Function cleanup
+- [ ] Additional language support
 
-### ID Collision Handling
-See [ID_COLLISION_HANDLING.md](ID_COLLISION_HANDLING.md) for detailed documentation.
+## Changelog
 
-- **Automatic retry mechanism**: Generates new IDs if collision occurs
-- **Smart error detection**: Only retries on unique constraint violations
-- **Limited attempts**: Maximum 3 retry attempts to prevent infinite loops
-- **Transparent to users**: Collisions are handled automatically without user intervention
-- **Detailed logging**: Console logs collision detection and retry attempts
-
-### Multi-Platform Support
-- Instagram, TikTok, X/Twitter, Facebook, WhatsApp, LinkedIn, YouTube, Telegram, Discord, GitHub, Twitch
-- Platform-specific username validation
-- **LinkedIn profile URL requirement** for accurate profile linking
-- **WhatsApp phone number validation** for proper messaging
-- Dual-layer avatar system (primary platform + fallback)
-- Smart deep linking for mobile devices
-- Clean, simple input fields for all social media platforms
-
-### Export System
-- **Unified export interface**: Single button reveals comprehensive export panel
-- **Customizable platform selection**: Checkboxes for each social media platform
-- **Bulk operations**: Select All/Clear All functionality
-- **Multiple export formats**: Copy to clipboard or download as TXT file
-- **Clean UI**: Toggleable panel with proper spacing and organization
-
-
-### Admin Features
-- Host receives admin token for train management
-- Lock/unlock trains to control new joins
-- Kick participants from the train
-- Clear all participants (host only)
-- QR code generation for easy sharing
-- Real-time participant management
-- **Rename train functionality** - Change train name after creation
-- **Edit participant entries** - Users can modify their own information
-
-### Security & Performance
-- **Enhanced Row Level Security (RLS) with proper validation policies** - No more overly permissive `WITH CHECK (true)` policies
-- **Secure header-based authentication** - Uses `x-admin-token` for admin operations and `x-participant-id` for self-edit validation
-- **Comprehensive input sanitization and validation to prevent prompt injection attacks**
-- Input validation and sanitization for all user inputs
-- Rate limiting for join requests
-- Cached avatar URLs for better performance
-- Automatic train expiry (72 hours)
-- ESLint enforced code quality
-- Cross-platform compatibility
-- **Source maps disabled in production builds** to prevent code exposure
-- **Proper environment variable management** with secure Vercel deployment practices
-
-## Constraints
-
-- No user authentication
-- No social media API calls
-- No profile data fetching
-- No follower counts or verified badges
-- No analytics
-- Username validation per platform requirements
-- **LinkedIn URL validation** with automatic parameter sanitization
-- Duplicate username check within same train
-- Train name max 50 chars
-- Bio max 100 chars
-- Train auto-expiry after 72 hours (adjustable by host)
+- **Jul 2026** — Fixed `.gitignore` encoding (UTF-16 → UTF-8); removed `node_modules/`, `build/`, and schema SQL files from tracking
+- **Apr 2026** — Added `thebooleanjulian-bot-core` dependency
+- **Feb 2026 (late)** — Added demo train with infinite expiry and Supabase Edge Function for automated cleanup
+- **Feb 2026** — Improved dark mode with SSR-safe initialisation and proper class handling; removed Spanish and French, added Chinese (zh) translations
+- **Feb 2026** — Resolved Vercel build failures (react-scripts permissions, CI mode ESLint, source maps disabled in production)
+- **Feb 2026** — Implemented comprehensive feature set: admin token persistence, smart autocomplete, enhanced export, edit-own-entry, legal pages
+- **Feb 2026** — Security hardening: proper Supabase RLS policies, removed `.env` and `.env.production` from Git tracking
 
 ## License
 
 MIT
+
+---
+
+<div align="center">
+<sub>Built by <a href="https://github.com/TheBooleanJulian">@TheBooleanJulian</a></sub>
+</div>

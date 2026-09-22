@@ -9,7 +9,7 @@
 ![Supabase](https://img.shields.io/badge/-Supabase-3ECF8E?logo=supabase&logoColor=white)
 ![Tailwind CSS](https://img.shields.io/badge/-Tailwind-06B6D4?logo=tailwindcss&logoColor=white)
 ![Vercel](https://img.shields.io/badge/-Vercel-000000?logo=vercel&logoColor=white)
-![License](https://img.shields.io/badge/license-MIT-00D4C8.svg)
+![License](https://img.shields.io/badge/license-AGPLv3%20%2B%20Commercial-00D4C8.svg)
 
 </div>
 
@@ -45,6 +45,10 @@ FollowTrain v2 solves the awkward "what's your IG?" shuffle at events. One perso
 | Icons | lucide-react |
 | QR Code | react-qr-code |
 | Hosting | Vercel |
+
+## Screenshots
+
+_Screenshots coming soon._ The app icon (`public/followtrain-icon.png`) exists in the repo, but no UI screenshots have been captured yet.
 
 ## Quick Start
 
@@ -116,7 +120,10 @@ followtrain-v2/
 
 ## License
 
-MIT
+This project is dual licensed.
+
+- Community Edition — [GNU Affero General Public License v3 (AGPLv3)](LICENSE). Free to use, modify, and self-host. If you distribute a modified version or run it as a network service, you must make the corresponding source available.
+- Commercial License — for organisations that want to embed, modify, or distribute this software without AGPLv3's obligations. See [COMMERCIAL-LICENSE.md](COMMERCIAL-LICENSE.md).
 
 ---
 

@@ -13,3 +13,6 @@ npm-debug.log*
 schema*.sql
 supabase_security.sql
 node_modules
+
+# Local tool state, never commit
+.env.production
